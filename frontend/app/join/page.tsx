@@ -122,15 +122,14 @@ export default function Join() {
   return (
     <main
       style={{
-        background: "url(/backgroundimage1.avif)",
+        background: "linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))",
         margin: 0,
         padding: 0,
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
         minHeight: "100vh",
-        fontFamily: "sans-serif",
-        backgroundSize: "cover",
+        fontFamily: "apple-system, sans-serif",
       }}
     >
       <div className="main">
@@ -151,7 +150,6 @@ export default function Join() {
               />
               <span className="validation-message">{validations.name.message}</span>
             </div>
-
             <div className={`input-container ${validations.email.touched ? (validations.email.isValid ? "success" : "error") : ""}`}>
               <input
                 type="email"
@@ -208,7 +206,7 @@ export default function Join() {
               <span className="validation-message">{validations.password.message}</span>
             </div>
 
-            <h4 style={{ marginLeft: "60px", color: "antiquewhite", fontSize: "large" }}>
+            <h4 style={{ color: "antiquewhite", fontSize: "large" }}>
               Choose your plan:
               <select
                 name="plan"
@@ -223,7 +221,7 @@ export default function Join() {
               </select>
             </h4>
 
-            <button type="submit">Pay & Join</button>
+            <button type="submit">Join</button>
             <Link href="/login" id="login_btn">
               Sign in
             </Link>
