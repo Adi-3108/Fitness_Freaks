@@ -705,7 +705,7 @@ body.dark-mode {
 
 .BUY-content {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, auto));
+  grid-template-columns: repeat(auto-fit, minmax(300px, auto));
   align-items: center;
   gap: 2.3rem;
   margin-top: 4.1rem;
@@ -725,7 +725,9 @@ body.dark-mode {
   background: var(--main-color);
   color: var(--bg-color);
 }
-
+#cartimage{
+  height: 20px;
+}
 .cartlink {
   background-color: transparent;
   color: var(--main-color);
@@ -944,57 +946,50 @@ body.dark-mode {
 }
 
 /* Join Page Styles */
-.main {
-  width: auto;
-  height: auto;
-  overflow: hidden;
-  border-radius: 10px;
-  background-color: black;
-  border: 2px solid black;
-  box-shadow: 5px 30px 50px black;
-  border-color: rgb(243, 243, 182);
-}
-
 #chk {
   display: none;
 }
 
 .signup {
   position: relative;
-  width: 100%;
+  width: 370px;
   height: 100%;
+  padding:30px;
+  border-radius: 15px;
+  box-shadow: 0 8px 32px var(--main-color);
+  border: 1px solid var(--snd-bg-color);
+  background-color: var(--snd-bg-color);
 }
 
 .signup label {
   color: black;
-  font-size: 35px;
+  font-size: 25px;
   justify-content: center;
   display: flex;
-  margin: 60px;
+  
   font-weight: bold;
   cursor: pointer;
-  background-color: rgb(226, 249, 15);
-  border: 2px solid black;
+  color:#ebeb4b;
   border-radius: 10px;
   transition: 0.5s ease-in-out;
   margin-bottom: 10px;
 }
 
 .signup input {
-  width: 60%;
-  height: 20px;
-  background: white;
+  width: 100%;
+  height: 40px;
+  color:var(--text-color);
+  background: transparent;
   justify-content: center;
   display: flex;
   margin: 18px auto;
   padding: 10px;
-  border: none;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.4);
   outline: none;
-  border-radius: 50px;
 }
 
 .signup button {
-  width: 60%;
+  width: 70%;
   height: 40px;
   margin: 10px auto;
   justify-content: center;
@@ -1007,19 +1002,27 @@ body.dark-mode {
   outline: none;
   border: none;
   border-radius: 10px;
-  transition: 0.3s ease-in;
   border: 2px solid black;
   cursor: pointer;
   box-shadow: 5px 20px 40px black;
 }
 
 .signup button:hover {
-  background: rgb(44, 85, 3);
+  background: rgb(255, 255, 0);
+}
+
+#plan{
+  border-radius: 8px;
+  width:40%;
+  height:30px;
+  padding: 5px;
+  border:1px solid #ebeb4b;
 }
 
 .input-container {
   position: relative;
   margin-bottom: 20px;
+  
 }
 
 #login_btn {
@@ -1029,9 +1032,8 @@ body.dark-mode {
   justify-content: center;
   align-items: center;
   color: rgb(240, 240, 13);
-  font-size: larger;
+  font-size: 20px;
   font-weight: bolder;
-  font-family: "Times New Roman", Times, serif;
 }
 
 .validation-message {
@@ -1051,10 +1053,6 @@ body.dark-mode {
 
 .input-container.success input {
   border: 2px solid green;
-}
-
-.input-container.error input {
-  border: 2px solid red;
 }
 
 .input-container.success::after {
