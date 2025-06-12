@@ -159,6 +159,26 @@ export default function UserProfile() {
   </span>
 </div>
 
+{/* Diet Plan Button */}
+<button
+  style={{
+    marginTop: 16,
+    padding: "14px 36px",
+    fontSize: 20,
+    borderRadius: 10,
+    background: "#ebeb4b",
+    color: "#232526",
+    border: "none",
+    cursor: "pointer",
+    fontWeight: 600,
+    transition: 'background 0.2s, transform 0.2s',
+    marginBottom: 16
+  }}
+  onClick={() => router.push("/my-diet")}
+>
+  View My Diet Plan
+</button>
+
           <button
             style={{
               marginTop: 32,

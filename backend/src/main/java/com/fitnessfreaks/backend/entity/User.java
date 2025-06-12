@@ -12,13 +12,14 @@ public class User {
    
     
     private String password;
-    @Column(unique = true)
+    @Column(name = "phone_number", unique = true)
     private String phoneNumber;
     @Column(unique = true)
    private String email;
     private String address;
     private String plan;
     private String otp; // 6-digit OTP for verification
+    @Column(name = "is_verified")
     private boolean isVerified = false;
     public User() {}
     // Getters and Setters
@@ -40,4 +41,4 @@ public class User {
     public void setOtp(String otp) { this.otp = otp; }
     public boolean isVerified() { return isVerified; }
     public void setVerified(boolean verified) { isVerified = verified; }
-} 
+}
