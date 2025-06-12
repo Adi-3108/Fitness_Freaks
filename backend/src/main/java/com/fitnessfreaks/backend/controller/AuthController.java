@@ -9,7 +9,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = "*")
+@CrossOrigin(originPatterns = "http://localhost:[*]")
 public class AuthController {
     @Autowired
     private UserService userService;
@@ -47,17 +47,27 @@ public class AuthController {
                 ? userService.getUserByEmail(emailOrPhone)
                 : userService.getUserByPhone(emailOrPhone);
     }
-    @PostMapping("/send-cancel-code")
+   @PostMapping("/send-cancel-code")
     public Map<String, Object> sendCancelCode(@RequestBody Map<String, String> payload) {
         String email = payload.get("email");
         String code = String.valueOf((int)(Math.random() * 900000) + 100000);
         emailService.sendEmail(email, "Your OTP for Cancelling Fitness Freaks Subscription", "Your OTP for cancelling Fitness Freaks subscription is: " + code);
         return Map.of("message", "Code sent", "code", code);
     }
+    
+  
     @PostMapping("/cancel-subscription")
     public Map<String, String> cancelSubscription(@RequestBody Map<String, String> payload) {
         String email = payload.get("email");
-        userService.deleteByEmail(email);
-        return Map.of("message", "User deleted");
+        try {
+            userService.deleteByEmail(email);
+            return Map.of("message", "User deleted");
+        } catch (Exception e) {
+            // Log the exception for debugging purposes (e.g., using a logger like SLF4J/Logback)
+            System.err.println("Error deleting user: " + e.getMessage());
+            // You might want to return a more specific error message based on the exception type
+            return Map.of("message", "Failed to delete user: " + e.getMessage());
+        }
     }
+   
 } 

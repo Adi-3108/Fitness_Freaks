@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import Dialog from "../components/Dialog";
 
 export default function VerifyOtp() {
   const [otp, setOtp] = useState("");
@@ -40,10 +41,10 @@ export default function VerifyOtp() {
         setShowSuccess(true);
         setTimeout(() => {
           setShowSuccess(false);
-          // setShowWelcome(true);
+          setShowWelcome(true);
         }, 1200);
         setTimeout(() => {
-          // setShowWelcome(false);
+          setShowWelcome(false);
           localStorage.removeItem("username");
           router.push("/");
         }, 3500);
@@ -80,199 +81,171 @@ export default function VerifyOtp() {
   };
 
   return (
-    <div
-      style={{
-        margin: 0,
-        padding: 0,
-        fontFamily: "apple-system, sans-serif",
-        background:
-          "linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
-        color: "var(--text-color)",
-        overflow: "hidden",
-      }}
-    >
+    <>
+      <Dialog 
+        isOpen={showSuccess}
+        message="OTP Verified Successfully!"
+        onClose={() => setShowSuccess(false)}
+        type="success"
+      />
+      <Dialog 
+        isOpen={showWelcome}
+        message="Thank you for choosing Us and Welcome to Fitness Freaks"
+        onClose={() => setShowWelcome(false)}
+        type="welcome"
+      />
       <div
         style={{
-          background: "#111111",
-          borderRadius: 20,
-          boxShadow: "0 8px 32px #ebeb4b",
-          border: "1px solid #ebeb4b",
-          padding: 32,
-          minWidth: 340,
+          margin: 0,
+          padding: 0,
+          fontFamily: "apple-system, sans-serif",
+          background:
+            "linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))",
           display: "flex",
-          flexDirection: "column",
+          justifyContent: "center",
           alignItems: "center",
-          position: "relative",
+          height: "100vh",
+          color: "var(--text-color)",
+          overflow: "hidden",
         }}
       >
-        <h2 style={{ marginBottom: 16, color: "#ebeb4b", fontSize: "22px" }}>
-          OTP Verification
-        </h2>
-        <form
-          onSubmit={handleSubmit}
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 16,
-            width: "100%",
-          }}
-        >
-          <input
-            type="text"
-            placeholder="Enter 6-digit OTP"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-            maxLength={6}
-            required
-            style={{
-              padding: 12,
-              fontSize: 18,
-              borderRadius: 8,
-              border: error ? "2px solid #e74c3c" : "1px solid #ebeb4b",
-              outline: "none",
-              transition: "border 0.2s",
-            }}
-            autoFocus
-          />
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              gap: 12,
-            }}
-          >
-            <button
-              type="submit"
-              className="verify-btn"
-              disabled={loading}
-              style={{
-                flex: 1,
-                padding: 12,
-                fontSize: 18,
-                borderRadius: 8,
-                background: loading ? "#aaa" : "#ebeb4b",
-                color: "black",
-                border: "none",
-                cursor: loading ? "not-allowed" : "pointer",
-                transition: "background 0.2s",
-              }}
-            >
-              {loading ? (
-                <span
-                  className="otp-loader"
-                  style={{
-                    display: "inline-block",
-                    width: 24,
-                    height: 24,
-                    border: "3px solid #232526",
-                    borderTop: "3px solid #fff",
-                    borderRadius: "50%",
-                    animation: "spin 1s linear infinite",
-                  }}
-                />
-              ) : (
-                "Verify OTP"
-              )}
-            </button>
-            <button
-              onClick={handleResend}
-              type="button"
-              disabled={loading}
-              className="resend-btn"
-              style={{
-                flex: 1,
-                padding: 12,
-                fontSize: 18,
-                borderRadius: 8,
-                background: "#ebeb4b",
-                color: "#232526",
-                border: "1px solid #ccc",
-                cursor: loading ? "not-allowed" : "pointer",
-              }}
-            >
-              Resend OTP
-            </button>
-          </div>
-        </form>
-        {error && (
-          <p
-            style={{
-              marginTop: 16,
-              color: error.includes("OTP") ? "#e74c3c" : "#27ae60",
-              fontWeight: 600,
-              fontSize: 20,
-            }}
-          >
-            {error}
-          </p>
-        )}
-      </div>
-
-      {/* Success Modal */}
-      {showSuccess && (
         <div
           style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            background: "rgba(0,0,0,0.3)",
+            background: "#111111",
+            borderRadius: 20,
+            boxShadow: "0 8px 32px #ebeb4b",
+            border: "1px solid #ebeb4b",
+            padding: 32,
+            minWidth: 340,
             display: "flex",
+            flexDirection: "column",
             alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
+            position: "relative",
           }}
         >
-          <div
+          <h2 style={{ marginBottom: 16, color: "#ebeb4b", fontSize: "22px" }}>
+            OTP Verification
+          </h2>
+          <form
+            onSubmit={handleSubmit}
             style={{
-              background: "#fff",
-              borderRadius: 16,
-              padding: 40,
-              minWidth: 320,
-              textAlign: "center",
-              boxShadow: "0 8px 32px rgba(0,0,0,0.2)",
+              display: "flex",
+              flexDirection: "column",
+              gap: 16,
+              width: "100%",
             }}
           >
+            <input
+              type="text"
+              placeholder="Enter 6-digit OTP"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              maxLength={6}
+              required
+              style={{
+                padding: 12,
+                fontSize: 18,
+                borderRadius: 8,
+                border: error ? "2px solid #e74c3c" : "1px solid #ebeb4b",
+                outline: "none",
+                transition: "border 0.2s",
+              }}
+              autoFocus
+            />
             <div
               style={{
-                fontSize: 48,
-                color: "#27ae60",
-                marginBottom: 16,
-                animation: "pop 0.5s",
+                display: "flex",
+                justifyContent: "space-between",
+                gap: 12,
               }}
             >
-              ✔️
+              <button
+                type="submit"
+                className="verify-btn"
+                disabled={loading}
+                style={{
+                  flex: 1,
+                  padding: 12,
+                  fontSize: 18,
+                  borderRadius: 8,
+                  background: loading ? "#aaa" : "#ebeb4b",
+                  color: "black",
+                  border: "none",
+                  cursor: loading ? "not-allowed" : "pointer",
+                  transition: "background 0.2s",
+                }}
+              >
+                {loading ? (
+                  <span
+                    className="otp-loader"
+                    style={{
+                      display: "inline-block",
+                      width: 24,
+                      height: 24,
+                      border: "3px solid #232526",
+                      borderTop: "3px solid #fff",
+                      borderRadius: "50%",
+                      animation: "spin 1s linear infinite",
+                    }}
+                  />
+                ) : (
+                  "Verify OTP"
+                )}
+              </button>
+              <button
+                onClick={handleResend}
+                type="button"
+                disabled={loading}
+                className="resend-btn"
+                style={{
+                  flex: 1,
+                  padding: 12,
+                  fontSize: 18,
+                  borderRadius: 8,
+                  background: "#ebeb4b",
+                  color: "#232526",
+                  border: "1px solid #ccc",
+                  cursor: loading ? "not-allowed" : "pointer",
+                }}
+              >
+                Resend OTP
+              </button>
             </div>
-            <h3 style={{ color: "#232526" }}>OTP Verified!</h3>
-          </div>
+          </form>
+          {error && (
+            <p
+              style={{
+                marginTop: 16,
+                color: error.includes("OTP") ? "#e74c3c" : "#27ae60",
+                fontWeight: 600,
+                fontSize: 20,
+              }}
+            >
+              {error}
+            </p>
+          )}
         </div>
-      )}
 
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          @keyframes pop {
+            0% { transform: scale(0.7); opacity: 0; }
+            80% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+          }
 
-      <style>{`
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-        @keyframes pop {
-          0% { transform: scale(0.7); opacity: 0; }
-          80% { transform: scale(1.1); opacity: 1; }
-          100% { transform: scale(1); opacity: 1; }
-        }
+          .verify-btn:hover {
+            background: #fdfd96 !important;
+          }
 
-        .verify-btn:hover {
-          background: #fdfd96 !important;
-        }
-
-        .resend-btn:hover {
-          background: #fdfd96 !important;
-        }
-      `}</style>
-    </div>
+          .resend-btn:hover {
+            background: #fdfd96 !important;
+          }
+        `}</style>
+      </div>
+    </>
   );
 }

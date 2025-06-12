@@ -35,7 +35,7 @@ export default function UserProfile() {
     "Romanian Deadlift",
     "Lunges (Walking or Stationary, with weights)",
     "Dips (Bodyweight or Weighted)",
-    "Farmer’s Carry (Heavy Dumbbells or Trap Bar)",
+    "Farmer's Carry (Heavy Dumbbells or Trap Bar)",
     "Treadmill Running / Jogging",
     "Cycling (Stationary or Road)",
     "Jump Rope",
@@ -371,7 +371,7 @@ useEffect(() => {
               style={{
                 padding: "8px",
                 minHeight: 32,
-                height: 32,
+                // height: 32,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -600,58 +600,89 @@ useEffect(() => {
                   disabled={verifying}
                   onClick={async () => {
                     setCancelError("");
-                    if (enteredCode.length !== 6) {
-                      setCancelError("Code must be 6 digits.");
-                      return;
-                    }
+                    if (enteredCode !== cancelCode) { setCancelError("Invalid code."); return; }
                     setVerifying(true);
-                    // Verify code
-                    const res = await fetch("http://localhost:8080/api/users/verify-cancel-code", {
+                    // Call backend to delete user
+                    const res = await fetch("http://localhost:8080/api/users/cancel-subscription", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ email: user.email, code: enteredCode })
+                      body: JSON.stringify({ email: user.email })
                     });
-                    const data = await res.json();
                     setVerifying(false);
                     if (res.ok) {
-                      // Delete user account
-                      await fetch("http://localhost:8080/api/users/delete", {
-                        method: "DELETE",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ email: user.email })
-                      });
-                      localStorage.removeItem("user")
-                      localStorage.removeItem("username")
-                      router.push("/")
+                      localStorage.removeItem("user");
+                      localStorage.removeItem("username");
+                      localStorage.removeItem("profilePic");
+                      setShowSuccessDialog(true);
+                      setTimeout(() => {
+                        setShowSuccessDialog(false);
+                        router.push("/");
+                      }, 3000);
                     } else {
-                      setCancelError(data.message || "Failed to verify code.");
+                      setCancelError("Failed to delete account. Try again.");
                     }
                   }}
-                  className="cancel-verify-hover"
+                  className="cancel-delete-hover"
                 >
-                  Verify and Delete Account
+                  I don't want to keep Fitness Freaks User Profile
                 </button>
               </>
             )}
             <button
+              style={{ background: "none", color: "#ebeb4b", border: "none", fontSize: 18, marginTop: 18, cursor: "pointer", textDecoration: "underline" }}
               onClick={() => setShowCancelModal(false)}
-              style={{ background: "transparent", color: "#fff", border: "none", borderRadius: 8, padding: "12px 32px", fontSize: 20, fontWeight: 700, cursor: "pointer", marginTop: 8, width: "100%", textAlign: "center", transition: 'background 0.2s, transform 0.2s' }}
-              className="cancel-close-hover"
+              className="cancel-go-back-hover"
             >
-              Close
+              Go back
             </button>
           </div>
         </div>
       )}
-      <footer style={{ background: "#000", color: "#fff", padding: "24px 48px", textAlign: "center", fontSize: 16, borderTop: "1px solid #333" }}>
-  <div style={{ marginBottom: 16 }}>
-    <Link href="/privacy" style={{ color: "#ebeb4b", textDecoration: "none", marginRight: 32, transition: 'color 0.2s' }}>Privacy Policy</Link>
-    <Link href="/terms" style={{ color: "#ebeb4b", textDecoration: "none", transition: 'color 0.2s' }}>Terms of Service</Link>
-  </div>
-  <div>
-    &copy; {new Date().getFullYear()} Fitness Freaks. All rights reserved.
-  </div>
-</footer>
+      {showSuccessDialog && (
+        <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4000 }}>
+          <div style={{ background: "#27ae60", borderRadius: 20, padding: 40, color: "#fff", boxShadow: "0 8px 32px rgba(0,0,0,0.4)", fontFamily: "inherit", textAlign: "center" }}>
+            <h2 style={{ fontSize: 32, marginBottom: 18, color: "#fff" }}>Subscription Cancelled Successfully!</h2>
+            <p style={{ fontSize: 20 }}>Redirecting to homepage...</p>
+          </div>
+        </div>
+      )}
+      <style>{`
+        .nav-hover:hover {
+          color: #fff !important;
+          text-decoration: underline;
+          transform: scale(1.07);
+        }
+        .logo-hover:hover {
+          color: #ebeb4b !important;
+          transform: scale(1.07);
+          cursor: pointer;
+        }
+        .logout-hover:hover {
+          background: #c0392b !important;
+          transform: scale(1.05);
+        }
+        .cancel-sub-hover:hover {
+          background: #c0392b !important;
+          transform: scale(1.05);
+        }
+        .change-profile-hover:hover {
+          background: #ffe066 !important;
+          transform: scale(1.05);
+        }
+        .cancel-continue-hover:hover {
+          background: #ffe066 !important;
+          transform: scale(1.05);
+        }
+        .cancel-delete-hover:hover {
+          background: #c0392b !important;
+          transform: scale(1.05);
+        }
+        .cancel-go-back-hover:hover {
+          color: #fff !important;
+          text-decoration: underline;
+          transform: scale(1.05);
+        }
+      `}</style>
     </div>
   )
 }

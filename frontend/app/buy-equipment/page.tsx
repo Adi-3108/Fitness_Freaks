@@ -45,9 +45,12 @@ export default function BuyEquipmentPage() {
     setLoading(true);
     try {
       const user = JSON.parse(localStorage.getItem("user") || "{}");
+      console.log("User object from localStorage:", user);
       if (!user.id) {
+        console.log("User ID not found, throwing error.");
         throw new Error("Please log in to place an order");
       }
+      console.log("User ID being sent:", user.id);
 
       const orderData = {
         user: { id: user.id },

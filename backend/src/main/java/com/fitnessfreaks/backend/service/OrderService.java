@@ -1,6 +1,7 @@
 package com.fitnessfreaks.backend.service;
 
 import com.fitnessfreaks.backend.entity.Order;
+import com.fitnessfreaks.backend.entity.User;
 import com.fitnessfreaks.backend.repository.OrderRepository;
 import com.fitnessfreaks.backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -22,10 +23,15 @@ public class OrderService {
     }
 
     public Order placeOrder(Order order) {
-        order.setPlacedAt(LocalDateTime.now());
-        Order savedOrder = repo.save(order);
+        try {
+            // Fetch the User entity from the database to ensure it's a managed entity
+            User existingUser = userRepo.findById(order.getUser().getId())
+                                        .orElseThrow(() -> new RuntimeException("User not found with ID: " + order.getUser().getId()));
 
-        userRepo.findById(order.getUser().getId()).ifPresent(user -> {
+            order.setUser(existingUser); // Set the managed User entity on the order
+            order.setPlacedAt(LocalDateTime.now());
+            Order savedOrder = repo.save(order);
+
             List<String> itemNames = order.getItems().stream()
                     .map(item -> item.getName() + " - ₹" + item.getPrice())
                     .toList();
@@ -33,16 +39,19 @@ public class OrderService {
             String arrivalDate = LocalDateTime.now().plusDays(5).toLocalDate().toString();
 
             emailService.sendOrderConfirmationEmail(
-                    user.getEmail(),
-                    user.getUsername(),
-                    user.getPhoneNumber(),
-                    user.getAddress(),
+                    existingUser.getEmail(),
+                    existingUser.getUsername(),
+                    existingUser.getPhoneNumber(),
+                    existingUser.getAddress(),
                     itemNames,
                     order.getItems().stream().mapToDouble(i -> i.getPrice()).sum(),
                     arrivalDate);
-        });
 
-        return savedOrder;
+            return savedOrder;
+        } catch (Exception e) {
+            System.err.println("Error placing order: " + e.getMessage());
+            throw new RuntimeException("Failed to place order: " + e.getMessage(), e);
+        }
     }
 
 }

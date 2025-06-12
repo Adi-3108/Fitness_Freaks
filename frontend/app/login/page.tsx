@@ -4,6 +4,7 @@ import type React from "react";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Dialog from "../components/Dialog";
 
 export default function Login() {
   const [formData, setFormData] = useState({
@@ -12,6 +13,7 @@ export default function Login() {
     remember: false,
   });
 
+  const [showOtpDialog, setShowOtpDialog] = useState(false);
   const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -40,10 +42,9 @@ export default function Login() {
       const data = await response.json();
 
       if (response.ok && data.message && data.message.includes("OTP sent")) {
-        alert(data.message || "OTP sent successfully.");
+        setShowOtpDialog(true);
         localStorage.setItem("username", formData.username); // Save for OTP verification
         // After OTP verification, user info will be saved in localStorage
-        router.push("/verify-otp");
       } else if (response.ok && data.message && data.message.toLowerCase().includes("verified")) {
         // If login directly verifies (for future), fetch user details
         const userRes = await fetch(`http://localhost:8080/api/users/details`, {
@@ -65,72 +66,84 @@ export default function Login() {
     }
   };
 
+  const handleOtpDialogClose = () => {
+    setShowOtpDialog(false);
+    router.push("/verify-otp");
+  };
+
   return (
-    <div
-      style={{
-        margin: 0,
-        padding: 0,
-        fontFamily: '"Inter", sans-serif',
-        background:
-          "linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
-        color: "var(--text-color)",
-        overflow: "hidden",
-      }}
-    >
-      <div className="loginL1">
-        <div className="L2">
-          <h2>Welcome Back!</h2>
-          <p>Log in to access your dashboard</p>
-          <form onSubmit={handleSubmit}>
-            <div className="input-field">
-              <input
-                type="text"
-                id="username"
-                name="username"
-                placeholder="Phone or Email"
-                value={formData.username}
-                onChange={handleChange}
-                required
-              />
-              <span className="focus-border"></span>
-            </div>
-            <div className="input-field">
-              <input
-                type="password"
-                id="password"
-                name="password"
-                placeholder="Password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-              />
-              <span className="borderr"></span>
-            </div>
-            <div className="options">
-              <label>
+    <>
+      <Dialog 
+        isOpen={showOtpDialog}
+        message="An OTP has been sent to your registered Email for Verification"
+        onClose={handleOtpDialogClose}
+      />
+      <div
+        style={{
+          margin: 0,
+          padding: 0,
+          fontFamily: '"Inter", sans-serif',
+          background:
+            "linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end))",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          color: "var(--text-color)",
+          overflow: "hidden",
+        }}
+      >
+        <div className="loginL1">
+          <div className="L2">
+            <h2>Welcome Back!</h2>
+            <p>Log in to access your dashboard</p>
+            <form onSubmit={handleSubmit}>
+              <div className="input-field">
                 <input
-                  type="checkbox"
-                  name="remember"
-                  checked={formData.remember}
+                  type="text"
+                  id="username"
+                  name="username"
+                  placeholder="Enter your Registered Email"
+                  value={formData.username}
                   onChange={handleChange}
-                />{" "}
-                Remember Me
-              </label>
-              <a href="/forgot-password">Forgot Password?</a>
-            </div>
-            <button type="submit" className="login-btn">
-              Login
-            </button>
-          </form>
-          <p className="signuplink">
-            Don&apos;t have an account? <Link href="/join">Sign up now</Link>
-          </p>
+                  required
+                />
+                <span className="focus-border"></span>
+              </div>
+              <div className="input-field">
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  placeholder="Enter your Password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                />
+                <span className="borderr"></span>
+              </div>
+              <div className="options">
+                <label>
+                  <input
+                    type="checkbox"
+                    name="remember"
+                    checked={formData.remember}
+                    onChange={handleChange}
+                  />{" "}
+                  Remember Me
+                </label>
+                <a href="/forgot-password">Forgot Password?</a>
+              </div>
+              <button type="submit" className="login-btn">
+                Login
+              </button>
+            </form>
+            <p className="signuplink">
+              Don&apos;t have an account? <Link href="/join">Sign up now</Link>
+            </p>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
