@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
-
+import java.util.List;
 @Service
 public class EmailService {
     @Autowired
@@ -29,4 +29,23 @@ public class EmailService {
         message.setText("Hello " + username + ",\n\nWelcome to the Fitness Freaks platform!");
         mailSender.send(message);
     }
-} 
+
+    public void sendOrderConfirmationEmail(String to, String username,String number, String address, List<String> items, double total, String expectedDate) {
+    StringBuilder messageText = new StringBuilder();
+    messageText.append("Hello ").append(username).append(",\n\n");
+    messageText.append("Thank you for your order on Fitness Freaks!\n\n");
+    messageText.append("📦 Items Ordered:\n");
+    for (String item : items) {
+        messageText.append("- ").append(item).append("\n");
+    }
+    messageText.append("\nTotal Price: ₹").append(total);
+    messageText.append("\nDelivery Address: ").append(address);
+    messageText.append("\nContact No:").append(number); 
+    messageText.append("\nEstimated Delivery Date: ").append(expectedDate);
+    messageText.append("\nMode of Payment : Cash On Delivery\n\n");
+    messageText.append("\n\nWe hope you stay fit and fabulous!\n\nCheers,\nFitness Freaks Team");
+
+    sendEmail(to, "Order Confirmation - Fitness Freaks", messageText.toString());
+}
+
+}
