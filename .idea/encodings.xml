@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Encoding">
-<<<<<<< HEAD
-    <file url="file://$PROJECT_DIR$/Fitness_Freaks/backend/src/main/java" charset="UTF-8" />
-=======
     <file url="file://$PROJECT_DIR$/backend/src/main/java" charset="UTF-8" />
->>>>>>> c7cf20509b714edd544f6542cf65242f6f90aac8
   </component>
 </project>
