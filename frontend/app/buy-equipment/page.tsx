@@ -1,40 +1,87 @@
 "use client"
 
-import { useState } from "react"
-import Image from "next/image"
-import Link from "next/link"
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+import { Equipment, OrderItem } from "../../types/equipment";
+import { fetchEquipment, placeOrder } from "../../services/api";
 
-export default function BuyEquipment() {
-  const [cartItems, setCartItems] = useState<{ name: string; price: number }[]>([])
-  const [cartVisible, setCartVisible] = useState(false)
-  const [total, setTotal] = useState(0)
+export default function BuyEquipmentPage() {
+  const router = useRouter();
+  const [equipment, setEquipment] = useState<Equipment[]>([]);
+  const [cartItems, setCartItems] = useState<OrderItem[]>([]);
+  const [cartVisible, setCartVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const showcartitems = () => {
-    setCartVisible(true)
-  }
+  useEffect(() => {
+    const user = localStorage.getItem("user");
 
-  const closecartitems = () => {
-    setCartVisible(false)
-  }
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+    
+    setLoading(true);
+    fetchEquipment()
+      .then(setEquipment)
+      .catch((err) => alert(err.message))
+      .finally(() => setLoading(false));
 
-  const addtocart = (itemName: string, itemPrice: number) => {
-    const newItem = { name: itemName, price: itemPrice }
-    setCartItems([...cartItems, newItem])
-    setTotal((prevTotal) => prevTotal + itemPrice)
-  }
 
-  const removeFromCart = (index: number) => {
-    const newCartItems = [...cartItems]
-    const removedItem = newCartItems.splice(index, 1)[0]
-    setCartItems(newCartItems)
-    setTotal((prevTotal) => prevTotal - removedItem.price)
-  }
+  }, [router]);
+
+  const addToCart = (eq: Equipment) => {
+    setCartItems((prev) => [...prev, { name: eq.name, price: eq.price }]);
+  };
+
+  const removeFromCart = (i: number) =>
+    setCartItems((prev) => prev.filter((_, idx) => idx !== i));
+
+  const total = cartItems.reduce((s, x) => s + x.price, 0);
+
+  const handlePlaceOrder = async () => {
+    if (!cartItems.length) return;
+    setLoading(true);
+    try {
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      console.log("User object from localStorage:", user);
+      if (!user.id) {
+        console.log("User ID not found, throwing error.");
+        throw new Error("Please log in to place an order");
+      }
+      console.log("User ID being sent:", user.id);
+
+      const orderData = {
+        user: { id: user.id },
+        items: cartItems.map((item) => ({
+          name: item.name,
+          price: item.price,
+        })),
+      };
+
+      const order = await placeOrder(orderData);
+      alert(`Order #${order.id} placed!`);
+      setCartItems([]);
+      setCartVisible(false);
+    } catch (e: any) {
+      alert(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="BUY" id="BUY">
       <div id="header">
         <Link href="/">
-          <Image src="/logo.jpeg.jpg" id="logoimage" alt="Logo" width={60} height={60} />
+          <Image
+            src="/logo.jpeg.jpg"
+            id="logoimage"
+            alt="Logo"
+            width={60}
+            height={60}
+          />
         </Link>
         <Link href="/" className="logo">
           Fitness <span>Freaks</span>
@@ -42,8 +89,12 @@ export default function BuyEquipment() {
         <h6 className="logo">
           Buy <span>Equipments</span>
         </h6>
-        <button id="cartlink" onClick={showcartitems} className="cartlink">
-          {/* <Image src="/cartimage.png" id="cartimage" alt="Cart" width={40} height={40} /> */}
+        <button
+          id="cartlink"
+          onClick={() => setCartVisible(true)}
+          className="cartlink"
+        >
+          <img src="/cartimage.png" id="cartimage" alt="" />
           <p style={{ display: "inline" }}>Cart (</p>
           <p style={{ display: "inline" }} id="itemcount">
             {cartItems.length}
@@ -53,58 +104,24 @@ export default function BuyEquipment() {
       </div>
 
       <div className="BUY-content">
-        <div className="row">
-          <Image src="/HANDGRIPPER.webp" alt="Hand Gripper" width={400} height={300} />
-          <h4>Hand Gripper </h4>
-          <h4>₹125</h4>
-          <button className="addtocart" onClick={() => addtocart("Hand Gripper", 125)}>
-            Add to Cart
-          </button>
-        </div>
-        <div className="row">
-          <Image src="/dumbbel.webp" alt="Dumbbells" width={400} height={300} />
-          <h4>Dumbbells (3kg * 2) </h4>
-          <h4>₹369</h4>
-          <button className="addtocart" onClick={() => addtocart("Dumbbells", 369)}>
-            Add to Cart
-          </button>
-        </div>
-        <div className="row">
-          <Image src="/pushupbar.jpg" alt="Push Up Bar" width={400} height={300} />
-          <h4>Push Up Bar</h4>
-          <h4>₹349</h4>
-          <button className="addtocart" onClick={() => addtocart("Push Up Bar", 349)}>
-            Add to Cart
-          </button>
-        </div>
-        <div className="row">
-          <Image src="/kettleball.jpg" alt="Kettlebell" width={400} height={300} />
-          <h4>Kettlebell</h4>
-          <h4>₹1519</h4>
-          <button className="addtocart" onClick={() => addtocart("Kettlebell", 1519)}>
-            Add to Cart
-          </button>
-        </div>
-        <div className="row">
-          <Image src="/tummytrimmer.jpg" alt="Tummy Trimmer" width={400} height={300} />
-          <h4>Tummy Trimmer</h4>
-          <h4>₹999</h4>
-          <button className="addtocart" onClick={() => addtocart("Tummy Trimmer", 999)}>
-            Add to Cart
-          </button>
-        </div>
-        <div className="row">
-          <Image src="/tredmill.jpg" alt="Treadmill" width={400} height={300} />
-          <h4>Treadmill</h4>
-          <h4>₹24,999</h4>
-          <button className="addtocart" onClick={() => addtocart("Treadmill", 24999)}>
-            Add to Cart
-          </button>
-        </div>
+        {equipment.map((eq) => (
+          <div key={eq.id} className="row">
+            <Image src={eq.imageUrl} alt={eq.name} width={400} height={300} />
+            <h4>{eq.name}</h4>
+            <h4>₹{eq.price}</h4>
+            <button className="addtocart" onClick={() => addToCart(eq)}>
+              Add to Cart
+            </button>
+          </div>
+        ))}
       </div>
 
-      <div id="cartsection" className="cartsection" style={{ display: cartVisible ? "block" : "none" }}>
-        <button onClick={closecartitems} className="close">
+      <div
+        id="cartsection"
+        className="cartsection"
+        style={{ display: cartVisible ? "block" : "none" }}
+      >
+        <button onClick={() => setCartVisible(false)} className="close">
           Close
         </button>
         <h2>Your Cart</h2>
@@ -130,13 +147,22 @@ export default function BuyEquipment() {
         </ul>
         <br />
         <br />
-        <h3 id="totalprice">{cartItems.length > 0 ? `Total Price - ₹${total}` : "Your Cart Is Empty"}</h3>
+        <h3 id="totalprice">
+          {cartItems.length > 0
+            ? `Total Price - ₹${total}`
+            : "Your Cart Is Empty"}
+        </h3>
         <br />
         <br />
-        <button id="placeorder" style={{ display: cartItems.length > 0 ? "block" : "none" }}>
-          Place Order
+        <button
+          id="placeorder"
+          style={{ display: cartItems.length > 0 ? "block" : "none" }}
+          onClick={handlePlaceOrder}
+          disabled={loading}
+        >
+          {loading ? "Placing..." : "Place Order"}
         </button>
       </div>
     </div>
-  )
+  );
 }

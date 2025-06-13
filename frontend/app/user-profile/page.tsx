@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
@@ -19,6 +19,31 @@ export default function UserProfile() {
   const [sendingCode, setSendingCode] = useState(false)
   const [verifying, setVerifying] = useState(false)
   const [showSuccessDialog, setShowSuccessDialog] = useState(false)
+  const [schedules, setSchedules] = useState<any[]>([])
+  const [newSchedule, setNewSchedule] = useState({ type: "class", workoutType: [], diet: "", scheduledAt: "" })
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [workoutTypeDraft, setWorkoutTypeDraft] = useState<string[]>([]);
+
+  const workoutOptions = [
+    "Deadlift",
+    "Barbell Back Squat",
+    "Bench Press (Barbell or Dumbbell)",
+    "Pull-Ups / Chin-Ups",
+    "Overhead Shoulder Press (Barbell or Dumbbell)",
+    "Barbell Row / Dumbbell Row",
+    "Romanian Deadlift",
+    "Lunges (Walking or Stationary, with weights)",
+    "Dips (Bodyweight or Weighted)",
+    "Farmer's Carry (Heavy Dumbbells or Trap Bar)",
+    "Treadmill Running / Jogging",
+    "Cycling (Stationary or Road)",
+    "Jump Rope",
+    "Stair Climber",
+    "Rowing Machine",
+    "Elliptical Trainer",
+    "Swimming"
+  ];
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -32,6 +57,14 @@ export default function UserProfile() {
       }
     }
   }, [router])
+
+  useEffect(() => {
+    if (user?.id) {
+      fetch(`http://localhost:8080/api/schedule/user/${user.id}`)
+        .then(res => res.json())
+        .then(setSchedules);
+    }
+  }, [user?.id]);
 
   const handleProfilePicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -50,6 +83,67 @@ export default function UserProfile() {
       reader.readAsDataURL(file)
     }
   }
+
+  // When type changes, reset workoutTypeDraft
+useEffect(() => {
+  setWorkoutTypeDraft([]);
+}, [newSchedule.type]);
+
+  const handleAddSchedule = async (e: any) => {
+    e.preventDefault();
+    let scheduledAt = newSchedule.scheduledAt;
+    if (scheduledAt) {
+      if (scheduledAt.length > 19) scheduledAt = scheduledAt.slice(0, 19);
+      if (scheduledAt.length === 16) scheduledAt += ':00';
+      if (scheduledAt[10] !== 'T') scheduledAt = scheduledAt.slice(0, 10) + 'T' + scheduledAt.slice(11);
+    }
+    const formattedSchedule = {
+      ...newSchedule,
+      workoutType: workoutTypeDraft.join(", "), // convert array to string
+      scheduledAt,
+      user: { id: user.id }
+    };
+    const res = await fetch("http://localhost:8080/api/schedule", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formattedSchedule)
+    });
+    if (res.ok) {
+      const added = await res.json();
+      setSchedules([...schedules, added]);
+      setNewSchedule({ type: "class", workoutType: [], diet: "", scheduledAt: "" });
+      setWorkoutTypeDraft([]);
+    } else {
+      let errorMsg = "Failed to add schedule.";
+      try {
+        const err = await res.json();
+        errorMsg = err.message || JSON.stringify(err);
+      } catch (e) {
+        errorMsg = await res.text();
+      }
+      alert(errorMsg);
+    }
+  };
+
+  const handleDeleteSchedule = async (id: number) => {
+    await fetch(`http://localhost:8080/api/schedule/${id}`, { method: "DELETE" });
+    setSchedules(schedules.filter(s => s.id !== id));
+  };
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false);
+      }
+    }
+    if (dropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [dropdownOpen]);
 
   if (!user) return null
 
@@ -124,41 +218,65 @@ export default function UserProfile() {
             </button>
           </div>
         </div>
-        <div style={{ flex: 1 }}>
-        <h2 style={{ fontSize: 40, color: "#ebeb4b", marginBottom: 12, fontWeight: 700 }}>
-  Welcome, {user.username}
-</h2>
-<p style={{ color: "#fff", fontSize: 22, marginBottom: 32, fontWeight: 500 }}>
-  Thank you for being a part of Fitness Freaks!
-</p>
-
-<div style={{ fontSize: 22, marginBottom: 12 }}>
-  <span style={{ color: "#fff", fontWeight: 600 }}>Email: </span>
-  <span style={{ color: "#ebeb4b" }}>{user.email}</span>
-</div>
-
-<div style={{ fontSize: 22, marginBottom: 12 }}>
-  <span style={{ color: "#fff", fontWeight: 600 }}>Phone: </span>
-  <span style={{ color: "#ebeb4b" }}>{user.phoneNumber}</span>
-</div>
-
-<div style={{ fontSize: 22, marginBottom: 12 }}>
-  <span style={{ color: "#fff", fontWeight: 600 }}>Plan: </span>
-  <span style={{ color: "#ebeb4b" }}>{user.plan}</span>
-</div>
-
-<div style={{ fontSize: 22, marginBottom: 12 }}>
-  <span style={{ color: "#fff", fontWeight: 600 }}>Address: </span>
-  <span style={{ color: "#ebeb4b" }}>{user.address}</span>
-</div>
-
-<div style={{ fontSize: 22, marginBottom: 12 }}>
-  <span style={{ color: "#fff", fontWeight: 600 }}>Joined: </span>
-  <span style={{ color: "#ebeb4b" }}>
-    {user.createdAt ? new Date(user.createdAt).toLocaleString() : `User #${user.id}`}
-  </span>
-</div>
-
+        <div
+          style={{
+            flex: 1,
+            background: "linear-gradient(135deg, #181818 60%, #232526 100%)",
+            border: "2px solid #ebeb4b",
+            borderRadius: 18,
+            boxShadow: "0 4px 32px 0 rgba(235,235,75,0.10)",
+            padding: "48px 48px 36px 48px",
+            marginTop: 8,
+            marginBottom: 8,
+            display: "flex",
+            flexDirection: "column",
+            gap: 8,
+            minWidth: 600, // increased minWidth
+            maxWidth: 900, // increased maxWidth
+            position: "relative",
+            overflow: "hidden"
+          }}
+        >
+          <div style={{ marginBottom: 0 }}>
+            <div style={{ fontSize: 32, color: "#ebeb4b", fontWeight: 700, textShadow: "0 2px 8px #232526" }}>
+              Welcome!
+            </div>
+            <div style={{ fontSize: 40, color: "#ebeb4b", marginBottom: 12, fontWeight: 700, textShadow: "0 2px 8px #232526" }}>
+              {user.username}
+            </div>
+          </div>
+          <p style={{ color: "#fff", fontSize: 22, marginBottom: 32, fontWeight: 500 }}>
+            Thank you for being a part of Fitness Freaks!
+          </p>
+          <div style={{ fontSize: 22, marginBottom: 12, display: "flex", alignItems: "center", flexWrap: "wrap" }}>
+            <span style={{ color: "#fff", fontWeight: 600, minWidth: 90 }}>Email:</span>
+            <span style={{
+              color: "#ebeb4b",
+              marginLeft: 12,
+              wordBreak: "break-all",
+              overflowWrap: "break-word",
+              maxWidth: "calc(100% - 110px)",
+              display: "inline-block"
+            }}>{user.email}</span>
+          </div>
+          <div style={{ fontSize: 22, marginBottom: 12, display: "flex", alignItems: "center" }}>
+            <span style={{ color: "#fff", fontWeight: 600, minWidth: 90 }}>Phone:</span>
+            <span style={{ color: "#ebeb4b", marginLeft: 12 }}>{user.phoneNumber}</span>
+          </div>
+          <div style={{ fontSize: 22, marginBottom: 12, display: "flex", alignItems: "center" }}>
+            <span style={{ color: "#fff", fontWeight: 600, minWidth: 90 }}>Address:</span>
+            <span style={{ color: "#ebeb4b", marginLeft: 12 }}>{user.address}</span>
+          </div>
+          <div style={{ fontSize: 22, marginBottom: 12, display: "flex", alignItems: "center" }}>
+            <span style={{ color: "#fff", fontWeight: 600, minWidth: 90 }}>Plan:</span>
+            <span style={{ color: "#ebeb4b", marginLeft: 12 }}>{user.plan}</span>
+          </div>
+          <div style={{ fontSize: 22, marginBottom: 12, display: "flex", alignItems: "center" }}>
+            <span style={{ color: "#fff", fontWeight: 600, minWidth: 90 }}>Joined:</span>
+            <span style={{ color: "#ebeb4b", marginLeft: 12 }}>
+              {user.createdAt ? new Date(user.createdAt).toLocaleString() : `User #${user.id}`}
+            </span>
+          </div>
           <button
             style={{
               marginTop: 32,
@@ -170,7 +288,9 @@ export default function UserProfile() {
               border: "none",
               cursor: "pointer",
               fontWeight: 600,
-              transition: 'background 0.2s, transform 0.2s'
+              transition: 'background 0.2s, transform 0.2s',
+              alignSelf: "center",
+              boxShadow: "0 2px 12px 0 rgba(231,76,60,0.10)"
             }}
             onClick={() => setShowCancelModal(true)}
             className="cancel-sub-hover"
@@ -179,6 +299,237 @@ export default function UserProfile() {
           </button>
         </div>
       </main>
+      <div
+        style={{
+          marginTop: 40,
+          background: "#000",
+          borderRadius: 24,
+          boxShadow: "0 8px 32px rgb(255, 255, 255)",
+          padding: 48,
+          maxWidth: 1000,
+          marginLeft: "auto",
+          marginRight: "auto",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center"
+        }}
+      >
+        <h3 style={{ color: '#ebeb4b', fontSize: 28, marginBottom: 16, textAlign: "center" }}>My Schedule</h3>
+        <form
+          onSubmit={handleAddSchedule}
+          style={{
+            display: 'flex',
+            gap: 12,
+            marginBottom: 16,
+            flexWrap: 'nowrap',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+        >
+          <select
+            value={newSchedule.type}
+            onChange={e => {
+              setNewSchedule({ ...newSchedule, type: e.target.value });
+              setWorkoutTypeDraft([]);
+            }}
+            style={{
+              fontSize: 18,
+              padding: 8,
+              borderRadius: 6,
+              textAlign: "center",
+              width: 200,
+              minWidth: 200,
+              maxWidth: 200,
+              height: 48,
+              flex: "0 0 200px"
+            }}
+          >
+            {/* <option value="class">Class</option> */}
+            <option value="muscle_strength">Muscle strength</option>
+            <option value="weight_loose">Weight loose</option>
+          </select>
+          <div
+            ref={dropdownRef}
+            style={{
+              position: "relative",
+              width: 200,
+              minWidth: 200,
+              maxWidth: 200,
+              height: 48,
+              fontSize: 18,
+              borderRadius: 6,
+              background: "#fff",
+              border: "1px solid #ccc",
+              cursor: "pointer",
+              textAlign: "center",
+              padding: 0,
+              flex: "0 0 200px"
+            }}
+            tabIndex={0}
+          >
+            <div
+              style={{
+                padding: "8px",
+                minHeight: 32,
+                // height: 32,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#232526",
+                background: "#fff",
+                borderRadius: 6,
+                height: "100%"
+              }}
+              onClick={() => setDropdownOpen(v => !v)}
+            >
+              Workout Type
+              <span style={{ marginLeft: 8, fontSize: 16, color: "#888" }}>▼</span>
+            </div>
+            {dropdownOpen && (
+              <div style={{
+                position: "absolute",
+                top: "100%",
+                left: 0,
+                right: 0,
+                background: "#fff",
+                border: "1px solid #ccc",
+                borderRadius: 6,
+                zIndex: 10,
+                maxHeight: 220,
+                overflowY: "auto",
+                boxShadow: "0 4px 16px rgba(0,0,0,0.12)"
+              }}>
+                {workoutOptions.map(opt => (
+                  <label
+                    key={opt}
+                    style={{
+                      display: "block",
+                      padding: "8px 16px",
+                      cursor: "pointer",
+                      fontSize: 17,
+                      color: "#232526",
+                      textAlign: "left",
+                      userSelect: "none"
+                    }}
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={workoutTypeDraft.includes(opt)}
+                      onChange={e => {
+                        setWorkoutTypeDraft(draft =>
+                          draft.includes(opt)
+                            ? draft.filter(o => o !== opt)
+                            : [...draft, opt]
+                        );
+                      }}
+                      style={{ marginRight: 8 }}
+                    />
+                    {opt}
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+          <input
+            type="text"
+            value={newSchedule.diet}
+            onChange={e => setNewSchedule({ ...newSchedule, diet: e.target.value })}
+            placeholder="Other"
+            style={{
+              fontSize: 18,
+              padding: 8,
+              borderRadius: 6,
+              textAlign: "center",
+              width: 200,
+              minWidth: 200,
+              maxWidth: 200,
+              height: 48,
+              flex: "0 0 200px"
+            }}
+          />
+          <input
+            type="datetime-local"
+            value={newSchedule.scheduledAt}
+            onChange={e => setNewSchedule({ ...newSchedule, scheduledAt: e.target.value })}
+            required
+            style={{
+              fontSize: 18,
+              padding: 8,
+              borderRadius: 6,
+              textAlign: "center",
+              width: 200,
+              minWidth: 200,
+              maxWidth: 200,
+              height: 48,
+              flex: "0 0 200px"
+            }}
+          />
+          <button
+            type="submit"
+            style={{
+              background: '#27ae60', // green color
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              padding: '10px 16px',
+              fontSize: 18,
+              fontWeight: 600,
+              cursor: 'pointer',
+              width: 90,
+              minWidth: 90,
+              maxWidth: 90,
+              height: 48,
+              flex: "0 0 90px"
+            }}
+          >
+            Add
+          </button>
+        </form>
+        <div style={{ overflowX: 'auto', borderRadius: 14, boxShadow: '0 4px 24px rgba(235,235,75,0.08)', width: "100%" }}>
+          <table style={{ width: '100%', color: '#fff', borderCollapse: 'separate', borderSpacing: 0, background: '#232526', borderRadius: 14, overflow: 'hidden', boxShadow: '0 2px 16px rgba(0,0,0,0.15)' }}>
+            <thead>
+              <tr style={{ background: 'linear-gradient(90deg, #ebeb4b 0%, #f7d358 100%)', color: '#232526' }}>
+                <th style={{ padding: 14, fontSize: 20, fontWeight: 700, borderTopLeftRadius: 14, borderRight: '2px solid #fff', textAlign: "center", minWidth: 70, width: 90 }}>Type</th>
+                <th style={{ padding: 14, fontSize: 20, fontWeight: 700, borderRight: '2px solid #fff', textAlign: "center", minWidth: 260, width: 320 }}>Workout Type</th>
+                <th style={{ padding: 14, fontSize: 20, fontWeight: 700, borderRight: '2px solid #fff', textAlign: "center", minWidth: 220, width: 280 }}>Diet</th>
+                <th style={{ padding: 14, fontSize: 20, fontWeight: 700, borderRight: '2px solid #fff', textAlign: "center", minWidth: 90, width: 120 }}>Date</th>
+                <th style={{ padding: 14, fontSize: 20, fontWeight: 700, borderTopRightRadius: 14, textAlign: "center", minWidth: 80, width: 100 }}>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {schedules.map((s, idx) => (
+                <tr key={s.id} style={{ background: idx % 2 === 0 ? '#181818' : '#232526', transition: 'background 0.2s', borderBottom: '1px solid #333', cursor: 'pointer' }}
+                  onMouseOver={e => (e.currentTarget.style.background = '#2d2d2d')}
+                  onMouseOut={e => (e.currentTarget.style.background = idx % 2 === 0 ? '#181818' : '#232526')}
+                >
+                  <td style={{ padding: 12, fontSize: 18, borderRight: '2px solid #fff', borderBottomLeftRadius: idx === schedules.length - 1 ? 14 : 0, textAlign: "center", minWidth: 70, width: 90 }}>{s.type}</td>
+                  <td style={{ padding: 12, fontSize: 18, borderRight: '2px solid #fff', textAlign: "center", minWidth: 260, width: 320 }}>
+                    {Array.isArray(s.workoutType) ? s.workoutType.join(", ") : s.workoutType}
+                  </td>
+                  <td style={{ padding: 12, fontSize: 18, borderRight: '2px solid #fff', textAlign: "center", minWidth: 220, width: 280 }}>{s.diet}</td>
+                  <td style={{ padding: 12, fontSize: 18, borderRight: '2px solid #fff', textAlign: "center", minWidth: 90, width: 120 }}>
+                    {s.scheduledAt
+                      ? (() => {
+                          const d = new Date(s.scheduledAt);
+                          return (
+                            <>
+                              <div>{d.toLocaleDateString()}</div>
+                              <div>{d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                            </>
+                          );
+                        })()
+                      : ''}
+                  </td>
+                  <td style={{ padding: 12, fontSize: 18, borderBottomRightRadius: idx === schedules.length - 1 ? 14 : 0, textAlign: "center", minWidth: 80, width: 100 }}>
+                    <button onClick={() => handleDeleteSchedule(s.id)} style={{ background: 'linear-gradient(90deg, #e74c3c 0%, #ff7675 100%)', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 20px', cursor: 'pointer', fontWeight: 600, fontSize: 16, boxShadow: '0 2px 8px rgba(231,76,60,0.12)', transition: 'background 0.2s, transform 0.2s' }}>Delete</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
       {showCancelModal && (
         <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 3000 }}>
           <div style={{ background: "#181818", borderRadius: 20, padding: 40, minWidth: 420, color: "#fff", boxShadow: "0 8px 32px rgba(0,0,0,0.4)", fontFamily: "inherit" }}>

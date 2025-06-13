@@ -20,6 +20,10 @@ public class User {
     private String plan;
     private String otp; // 6-digit OTP for verification
     private boolean isVerified = false;
+
+    @Column(nullable = false)
+    private boolean isAdmin = false;  // Default value is false
+
     public User() {}
     // Getters and Setters
     public Long getId() { return id; }
@@ -40,4 +44,12 @@ public class User {
     public void setOtp(String otp) { this.otp = otp; }
     public boolean isVerified() { return isVerified; }
     public void setVerified(boolean verified) { isVerified = verified; }
-} 
+
+    public boolean getIsAdmin() {
+        return isAdmin;
+    }
+
+    public void setIsAdmin(boolean isAdmin) {
+        this.isAdmin = isAdmin;
+    }
+}
