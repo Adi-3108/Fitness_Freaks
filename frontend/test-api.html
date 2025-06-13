@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test</title>
+</head>
+<body>
+    <h1>API Connectivity Test</h1>
+    <button onclick="testLogin()">Test Login API</button>
+    <button onclick="testRegister()">Test Register API</button>
+    <div id="result"></div>
+
+    <script>
+        async function testLogin() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing login...';
+            
+            try {
+                const response = await fetch('http://localhost:8080/api/users/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: 'test@test.com',
+                        password: 'password123'
+                    })
+                });
+                
+                const data = await response.json();
+                resultDiv.innerHTML = `<h3>Login Test Result:</h3><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                resultDiv.innerHTML = `<h3>Login Test Error:</h3><pre>${error.message}</pre>`;
+            }
+        }
+
+        async function testRegister() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing registration...';
+            
+            try {
+                const response = await fetch('http://localhost:8080/api/users/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: 'testuser2',
+                        email: 'test2@test.com',
+                        password: 'password123',
+                        phoneNumber: '9876543211',
+                        address: 'Test Address',
+                        plan: 'BASIC'
+                    })
+                });
+                
+                const data = await response.json();
+                resultDiv.innerHTML = `<h3>Register Test Result:</h3><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                resultDiv.innerHTML = `<h3>Register Test Error:</h3><pre>${error.message}</pre>`;
+            }
+        }
+    </script>
+</body>
+</html> 

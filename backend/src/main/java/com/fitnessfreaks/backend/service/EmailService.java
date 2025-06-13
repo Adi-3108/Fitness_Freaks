@@ -3,8 +3,12 @@ package com.fitnessfreaks.backend.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import java.util.List;
+
 @Service
 public class EmailService {
     @Autowired
@@ -20,6 +24,20 @@ public class EmailService {
         message.setSubject(subject);
         message.setText(text);
         mailSender.send(message);
+    }
+
+    public void sendHtmlEmail(String to, String subject, String textContent, String htmlContent) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(textContent, htmlContent);
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            // Fallback to plain text email if HTML fails
+            sendEmail(to, subject, textContent);
+        }
     }
 
     public void sendWelcomeEmail(String to, String username) {

@@ -1,14 +1,15 @@
 "use client"
+import React from "react"
 import Link from "next/link"
 import Image from "next/image"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
-
+import ReviewSection from "@/components/ReviewSection";
+import Head from "next/head";
 export default function Home() {
   return (
     <>
       <Header />
-
       <section className="home" id="home">
         <div className="home-content">
           <h3 id="box">Build Your</h3>
@@ -26,7 +27,10 @@ export default function Home() {
         <div className="home-img">
           <Image src="/home image.jpg" alt="Home image" width={600} height={400} />
         </div>
-      </section>
+
+    </section>
+
+
 
       <section className="services" id="services">
         <h2 className="heading">
@@ -93,7 +97,28 @@ export default function Home() {
           </a>
         </div>
       </section>
+       <section className="diet-plan" id="diet">
+                        <h2 className="heading"><span>Diet </span>Importance</h2>
 
+                        <div className="diet-content">
+                          <div className="diet-text">
+                            <p>
+                             <span> A proper diet is just as essential as exercise when it comes to achieving your fitness
+                              goals in the gym. While workouts help build strength, endurance, and muscle, it's your
+                              diet that fuels these efforts and determines the results.</span>
+                              </p>
+                              <p>
+                               Skipping meals or following unstructured diets can lead to fatigue, poor performance,
+                              muscle loss, or even injury. Moreover, essential vitamins and minerals found in fruits
+                             and vegetables enhance your immune system, keep your metabolism functioning optimally,
+                             and contribute to better mental focus during training.
+                            </p>
+                          </div>
+                          <div className="diet-img">
+                            <Image src="/healthy.jpg" alt="Healthy Meal" width={500} height={350} />
+                          </div>
+                        </div>
+                      </section>
       <section className="plans" id="plans">
         <h2 className="heading">
           Our <span>Plans</span>
@@ -149,60 +174,8 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="review" id="review">
-        <div className="review-box">
-          <h2 className="heading">
-            Client <span>Reviews</span>
-          </h2>
-          <div className="wrapper">
-            <div className="review-item">
-              <Image src="/1.jpg" alt="Tushar" width={150} height={150} />
-              <h2>Tushar</h2>
-              <div className="rating">
-                <i className="bx bx-star" id="star"></i>
-                <i className="bx bx-star" id="star"></i>
-                <i className="bx bx-star" id="star"></i>
-                <i className="bx bx-star" id="star"></i>
-                <i className="bx bx-star" id="star"></i>
-              </div>
-              <p>
-                &quot;Amazing gym with top-notch equipment and expert trainers! The personalized workout plans have
-                helped me reach goals I never thought possible. Highly recommend!&quot;
-              </p>
-            </div>
-            <div className="review-item">
-              <Image src="/2.jpg" alt="Ajeet" width={150} height={150} />
-              <h2>Ajeet</h2>
-              <div className="rating">
-                <i className="bx bx-star" id="star"></i>
-                <i className="bx bx-star" id="star"></i>
-                <i className="bx bx-star" id="star"></i>
-                <i className="bx bx-star" id="star"></i>
-              </div>
-              <p>
-                &quot;This gym offers a great mix of challenging workouts and supportive staff. The results have been
-                incredible, and I feel stronger every day!&quot;
-              </p>
-            </div>
-            <div className="review-item">
-              <Image src="/3.jpg" alt="Manan" width={150} height={150} />
-              <h2>Manan</h2>
-              <div className="rating">
-                <i className="bx bx-star" id="star"></i>
-                <i className="bx bx-star" id="star"></i>
-                <i className="bx bx-star" id="star"></i>
-                <i className="bx bx-star" id="star"></i>
-                <i className="bx bx-star" id="star"></i>
-              </div>
-              <p>
-                &quot;The fitness programs are excellent, and the environment is always motivating. I&apos;ve seen real
-                progress in my strength and overall health since joining!&quot;
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
+     
+      <ReviewSection />
       <Footer />
     </>
   )
