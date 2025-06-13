@@ -121,7 +121,7 @@ export default function Announcement() {
             cursor: "pointer"
           }}
         >
-          Toggle Mode
+          Dark/Light Mode
         </button>
       </header>
       <div style={{ height: "100px" }} />

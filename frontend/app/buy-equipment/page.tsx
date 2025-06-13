@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Equipment, OrderItem } from "../../types/equipment";
-import { fetchEquipment, placeOrder } from "../../services/api";
+import { fetchEquipment } from "../../services/api";
 
 export default function BuyEquipmentPage() {
   const router = useRouter();
@@ -28,7 +28,6 @@ export default function BuyEquipmentPage() {
       .catch((err) => alert(err.message))
       .finally(() => setLoading(false));
 
-
   }, [router]);
 
   const addToCart = (eq: Equipment) => {
@@ -42,33 +41,20 @@ export default function BuyEquipmentPage() {
 
   const handlePlaceOrder = async () => {
     if (!cartItems.length) return;
-    setLoading(true);
-    try {
-      const user = JSON.parse(localStorage.getItem("user") || "{}");
-      console.log("User object from localStorage:", user);
-      if (!user.id) {
-        console.log("User ID not found, throwing error.");
-        throw new Error("Please log in to place an order");
-      }
-      console.log("User ID being sent:", user.id);
-
-      const orderData = {
-        user: { id: user.id },
-        items: cartItems.map((item) => ({
-          name: item.name,
-          price: item.price,
-        })),
-      };
-
-      const order = await placeOrder(orderData);
-      alert(`Order #${order.id} placed!`);
-      setCartItems([]);
-      setCartVisible(false);
-    } catch (e: any) {
-      alert(e.message);
-    } finally {
-      setLoading(false);
+    
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    if (!user.email || !user.id) {
+      alert("Please log in to place an order");
+      return;
     }
+
+    // Store cart items in localStorage for after payment confirmation
+    localStorage.setItem("equipmentCart", JSON.stringify(cartItems));
+    localStorage.setItem("equipmentUserEmail", user.email);
+    localStorage.setItem("equipmentUserId", user.id);
+    
+    // Redirect to payment page with cart total
+    router.push(`/payments?amount=${total}&email=${user.email}`);
   };
 
   return (
@@ -160,7 +146,7 @@ export default function BuyEquipmentPage() {
           onClick={handlePlaceOrder}
           disabled={loading}
         >
-          {loading ? "Placing..." : "Place Order"}
+          {loading ? "Processing..." : "Proceed to Payment"}
         </button>
       </div>
     </div>
