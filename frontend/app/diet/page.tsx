@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { sendDietPlan } from "@/services/api";
 
 type MealItem = { item: string; calories: number; img: string };
 type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snacks';
@@ -100,6 +101,7 @@ const CALORIE_LIMIT = 2000;
 export default function DietPlan() {
   const [selectedCategory, setSelectedCategory] = useState<DietCategory>("Bulking");
   const [user, setUser] = useState<User | null>(null);
+  const [emailStatus, setEmailStatus] = useState<string>("");
   const router = useRouter();
 
   const setAsMyDietPlan = async () => {
@@ -136,6 +138,21 @@ export default function DietPlan() {
     } catch (error) {
       console.error('Error saving diet plan:', error);
       alert('Failed to save diet plan. Please try again.');
+    }
+  };
+
+  const sendDietPlanToEmail = async () => {
+    if (!user || !user.email) {
+      setEmailStatus("User email not found. Please login again.");
+      return;
+    }
+
+    try {
+      setEmailStatus("Sending...");
+      const response = await sendDietPlan(user.email, selectedCategory);
+      setEmailStatus(response.message || "Diet plan sent successfully!");
+    } catch (error) {
+      setEmailStatus("Failed to send diet plan. Please try again.");
     }
   };
 
@@ -212,6 +229,28 @@ export default function DietPlan() {
             </ul>
           </div>
         ))}
+      </div>
+
+      <div style={{ textAlign: 'center', margin: '1.5rem 0' }}>
+        <button
+          style={{
+            background: '#ebeb4b',
+            color: '#232526',
+            border: 'none',
+            borderRadius: 8,
+            padding: '12px 32px',
+            fontSize: 20,
+            fontWeight: 600,
+            cursor: 'pointer',
+            margin: '0 8px',
+            transition: 'background 0.2s, transform 0.2s',
+          }}
+          onClick={sendDietPlanToEmail}
+          disabled={!user || !user.email}
+        >
+          Send to Email
+        </button>
+        {emailStatus && <p className="email-status">{emailStatus}</p>}
       </div>
 
       <style jsx>{`
