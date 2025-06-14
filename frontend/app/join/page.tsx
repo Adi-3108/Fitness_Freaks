@@ -2,9 +2,11 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Dialog from "../components/Dialog";
 
 export default function Join() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -73,6 +75,19 @@ export default function Join() {
     validateField(name, value);
   };
 
+  const getPlanAmount = (plan: string) => {
+    switch (plan) {
+      case "BASIC":
+        return 800;
+      case "PRO":
+        return 1000;
+      case "PREMIUM":
+        return 1500;
+      default:
+        return 800;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -83,46 +98,13 @@ export default function Join() {
     const emailValid = validateField("email", formData.email);
 
     if (nameValid && phoneValid && addressValid && passwordValid && emailValid) {
-      try {
-        const res = await fetch("http://localhost:8080/api/users/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            username: formData.name,
-            phoneNumber: formData.phone,
-            address: formData.address,
-            password: formData.password,
-            email: formData.email,
-            plan: formData.plan,
-          }),
-        });
-
-        const data = await res.json();
-
-        if (res.ok && data.message && data.message.includes("OTP sent")) {
-          setShowOtpDialog(true);
-          localStorage.setItem("username", formData.email || formData.phone); // Save for OTP verification
-          setFormData({
-            name: "",
-            phone: "",
-            address: "",
-            password: "",
-            email: "",
-            plan: "BASIC",
-          });
-        } else {
-          alert("Registration failed: " + (data.message || "Unknown error"));
-        }
-      } catch (error) {
-        console.error("Submit error:", error);
-        alert("Something went wrong. Please try again later.");
-      }
+      // Store form data in localStorage for after payment
+      localStorage.setItem("registrationData", JSON.stringify(formData));
+      
+      // Redirect to payment page
+      const amount = getPlanAmount(formData.plan);
+      router.push(`/payments?amount=${amount}&email=${formData.email}`);
     }
-  };
-
-  const handleOtpDialogClose = () => {
-    setShowOtpDialog(false);
-    window.location.href = "/verify-otp";
   };
 
   return (
@@ -130,7 +112,7 @@ export default function Join() {
       <Dialog 
         isOpen={showOtpDialog}
         message="An OTP has been sent to your registered Email for Verification"
-        onClose={handleOtpDialogClose}
+        onClose={() => setShowOtpDialog(false)}
       />
       <main
         style={{
@@ -162,6 +144,7 @@ export default function Join() {
                 />
                 <span className="validation-message">{validations.name.message}</span>
               </div>
+
               <div className={`input-container ${validations.email.touched ? (validations.email.isValid ? "success" : "error") : ""}`}>
                 <input
                   type="email"
@@ -218,25 +201,21 @@ export default function Join() {
                 <span className="validation-message">{validations.password.message}</span>
               </div>
 
-              <h4 style={{ color: "antiquewhite", fontSize: "large" }}>
-                Choose your plan:
+              <div className="plan-selection">
+                <h4>Choose your plan:</h4>
                 <select
                   name="plan"
                   id="plan"
                   value={formData.plan}
                   onChange={handleChange}
-                  style={{ marginLeft: "10px" }}
                 >
-                  <option value="BASIC">BASIC</option>
-                  <option value="PRO">PRO</option>
-                  <option value="PREMIUM">PREMIUM</option>
+                  <option value="BASIC">BASIC - ₹800/month</option>
+                  <option value="PRO">PRO - ₹1000/month</option>
+                  <option value="PREMIUM">PREMIUM - ₹1500/month</option>
                 </select>
-              </h4>
+              </div>
 
-              <button type="submit">Join</button>
-              <Link href="/login" id="login_btn">
-                Sign in
-              </Link>
+              <button type="submit">Proceed to Payment</button>
             </form>
           </div>
         </div>
