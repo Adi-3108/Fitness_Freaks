@@ -7,44 +7,41 @@ export default function BMICalculator() {
   const [height, setHeight] = useState("")
   const [result, setResult] = useState("")
 
-  const calculateBMI = async () => {
+  const calculateBMI = () => {
     const weightVal = parseFloat(weight)
-    const heightVal = parseFloat(height)
+    const heightCm = parseFloat(height)
 
-    if (weightVal <= 0 || heightVal <= 0) {
+    if (weightVal <= 0 || heightCm <= 0) {
       alert("Please enter valid positive numbers for weight and height.")
+      setResult("") // Clear previous result on error
       return
     }
 
-    try {
-      const response = await fetch("http://localhost:5000/bmi", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ weight: weightVal, height: heightVal }),
-      })
+    const heightM = heightCm / 100 // Convert height from cm to meters
+    const bmi = (weightVal / (heightM * heightM)).toFixed(2) // Calculate BMI and round to 2 decimal places
+    const bmiNum = parseFloat(bmi)
 
-      const data = await response.json()
-      const bmi = parseFloat(data.bmi)
+    let category = ""
+    let resultColor = ""
 
-      let category = ""
-      if (bmi < 18.5) {
-        category = "Underweight"
-      } else if (bmi < 24.9) {
-        category = "Normal weight"
-      } else if (bmi < 29.9) {
-        category = "Overweight"
-      } else {
-        category = "Obese"
-      }
-
-      setResult(`
-        <p>Your BMI is <span style="color: #007bff;">${bmi}</span>.</p>
-        <p>You are classified as <span style="color: #dc3545;">${category}</span>.</p>
-      `)
-    } catch (err) {
-      console.error("Error contacting backend:", err)
-      alert("Server error. Please make sure the backend is running.")
+    if (bmiNum < 18.5) {
+      category = "Underweight"
+      resultColor = "#007bff" // Blue for underweight
+    } else if (bmiNum < 24.9) {
+      category = "Normal weight"
+      resultColor = "#28a745" // Green for normal weight
+    } else if (bmiNum < 29.9) {
+      category = "Overweight"
+      resultColor = "#ffc107" // Yellow for overweight
+    } else {
+      category = "Obese"
+      resultColor = "#dc3545" // Red for obese
     }
+
+    setResult(`
+      <p>Your BMI is <span style="color: var(--main-color);">${bmi}</span>.</p>
+      <p>You are classified as <span style="color: ${resultColor};">${category}</span>.</p>
+    `)
   }
 
   return (
