@@ -1,6 +1,7 @@
 import type React from "react"
 import type { Metadata } from "next/types"
 import "./globals.css"
+import PushNotificationSetup from "@/components/PushNotificationSetup"
 
 export const metadata: Metadata = {
   title: "Fitness Freaks",
@@ -18,7 +19,10 @@ export default function RootLayout({
       <head>
         <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <PushNotificationSetup />
+      </body>
     </html>
   )
 }
