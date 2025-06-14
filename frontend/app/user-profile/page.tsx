@@ -24,6 +24,8 @@ export default function UserProfile() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [workoutTypeDraft, setWorkoutTypeDraft] = useState<string[]>([]);
+  const [showRemainingTime, setShowRemainingTime] = useState(false);
+  const [remainingTime, setRemainingTime] = useState("");
 
   const workoutOptions = [
     "Deadlift",
@@ -145,6 +147,49 @@ useEffect(() => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [dropdownOpen]);
 
+  const calculateRemainingTime = () => {
+    if (!user?.planStartDate || !user?.plan) {
+      setRemainingTime("Plan information not available. Please contact support.");
+      return;
+    }
+
+    const startDate = new Date(user.planStartDate);
+    const now = new Date();
+    let monthsToAdd = 0;
+
+    switch (user.plan.toLowerCase()) {
+      case 'basic':
+        monthsToAdd = 1;
+        break;
+      case 'pro':
+        monthsToAdd = 3;
+        break;
+      case 'premium':
+        monthsToAdd = 6;
+        break;
+      default:
+        setRemainingTime("Invalid plan type. Please contact support.");
+        return;
+    }
+
+    const endDate = new Date(startDate);
+    endDate.setMonth(endDate.getMonth() + monthsToAdd);
+
+    if (now > endDate) {
+      setRemainingTime("Your plan has expired. Please renew to continue enjoying our services.");
+      return;
+    }
+
+    const diffTime = endDate.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays <= 0) {
+      setRemainingTime("Your plan has expired. Please renew to continue enjoying our services.");
+    } else {
+      setRemainingTime(`Your plan will expire in ${diffDays} days`);
+    }
+  };
+
   if (!user) return null
 
   return (
@@ -248,6 +293,53 @@ useEffect(() => {
           <p style={{ color: "#fff", fontSize: 22, marginBottom: 32, fontWeight: 500 }}>
             Thank you for being a part of Fitness Freaks!
           </p>
+          <div style={{ marginBottom: 24 }}>
+            <button
+              onClick={() => {
+                setShowRemainingTime(!showRemainingTime);
+                if (!showRemainingTime) {
+                  calculateRemainingTime();
+                }
+              }}
+              style={{
+                background: "#ebeb4b",
+                color: "#232526",
+                border: "none",
+                borderRadius: 8,
+                padding: "12px 24px",
+                fontSize: 18,
+                fontWeight: 600,
+                cursor: "pointer",
+                transition: 'background 0.2s, transform 0.2s',
+                display: "flex",
+                alignItems: "center",
+                gap: "8px"
+              }}
+              className="check-time-hover"
+            >
+              <i className="bx bx-time"></i>
+              {showRemainingTime ? "Hide Remaining Time" : "Plan Expiry"}
+            </button>
+            {showRemainingTime && remainingTime && (
+              <div
+                style={{
+                  marginTop: 16,
+                  padding: 20,
+                  background: "rgba(235, 235, 75, 0.1)",
+                  borderRadius: 8,
+                  border: "2px solid #ebeb4b",
+                  color: "#ebeb4b",
+                  fontSize: "1.4rem",
+                  fontWeight: 600,
+                  textAlign: "center",
+                  textShadow: "0 2px 4px rgba(0,0,0,0.3)",
+                  boxShadow: "0 4px 8px rgba(0,0,0,0.2)"
+                }}
+              >
+                {remainingTime}
+              </div>
+            )}
+          </div>
           <div style={{ fontSize: 22, marginBottom: 12, display: "flex", alignItems: "center", flexWrap: "wrap" }}>
             <span style={{ color: "#fff", fontWeight: 600, minWidth: 90 }}>Email:</span>
             <span style={{
@@ -702,6 +794,10 @@ useEffect(() => {
         .cancel-go-back-hover:hover {
           color: #fff !important;
           text-decoration: underline;
+          transform: scale(1.05);
+        }
+        .check-time-hover:hover {
+          background: #ffe066 !important;
           transform: scale(1.05);
         }
       `}</style>

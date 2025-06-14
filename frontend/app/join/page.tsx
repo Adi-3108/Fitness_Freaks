@@ -80,9 +80,9 @@ export default function Join() {
       case "BASIC":
         return 800;
       case "PRO":
-        return 1000;
+        return 2200;
       case "PREMIUM":
-        return 1500;
+        return 5000;
       default:
         return 800;
     }
@@ -202,16 +202,16 @@ export default function Join() {
               </div>
 
               <div className="plan-selection">
-                <h4>Choose your plan:</h4>
+                <h2>Choose your plan:</h2>
                 <select
                   name="plan"
                   id="plan"
                   value={formData.plan}
                   onChange={handleChange}
                 >
-                  <option value="BASIC">BASIC - ₹800/month</option>
-                  <option value="PRO">PRO - ₹1000/month</option>
-                  <option value="PREMIUM">PREMIUM - ₹1500/month</option>
+                  <option value="BASIC">BASIC - ₹800 for 1 month</option>
+                  <option value="PRO">PRO - ₹2200 for 3 month</option>
+                  <option value="PREMIUM">PREMIUM - ₹5000 for 6 month</option>
                 </select>
               </div>
 

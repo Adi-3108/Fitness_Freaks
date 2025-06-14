@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
+import java.time.LocalDateTime;
 
 @Service
 public class UserService {
@@ -19,6 +20,7 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setOtp(OtpUtil.generateOtp());
         user.setVerified(false);
+        user.setPlanStartDate(LocalDateTime.now());
         userRepository.save(user);
         emailService.sendOtpEmail(user.getEmail(), user.getOtp());
         return "OTP sent to your email!";
@@ -79,5 +81,22 @@ public class UserService {
     }
     public User getUserById(Long id) {
         return userRepository.findById(id).orElse(null);
+    }
+    public User getUserByResetToken(String token) {
+        return userRepository.findByResetToken(token).orElse(null);
+    }
+    public void saveUser(User user) {
+        if (user.getPassword() != null && !user.getPassword().startsWith("$2a$")) {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+        }
+        userRepository.save(user);
+    }
+    public void updatePlanStartDate(String email) {
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            user.setPlanStartDate(LocalDateTime.now());
+            userRepository.save(user);
+        }
     }
 } 

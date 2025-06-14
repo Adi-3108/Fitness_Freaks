@@ -11,6 +11,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -174,5 +175,84 @@ public class AuthController {
             logger.error("Failed to send email to {}: {}", email, e.getMessage());
             return Map.of("message", "Failed to send email: " + e.getMessage());
         }
+    }
+
+    @PostMapping("/forgot-password")
+    public Map<String, String> forgotPassword(@RequestBody Map<String, String> payload) {
+        String email = payload.get("email");
+        User user = userService.getUserByEmail(email);
+        
+        if (user == null) {
+            return Map.of("message", "If an account exists with this email, you will receive a password reset link.");
+        }
+
+        // Generate a unique token
+        String token = UUID.randomUUID().toString();
+        user.setResetToken(token);
+        userService.saveUser(user);
+
+        // Create reset link
+        String resetLink = "http://localhost:3000/reset-password?token=" + token;
+
+        // Send email with reset link
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            helper.setTo(email);
+            helper.setSubject("Reset Your Fitness Freaks Password");
+            
+            String htmlContent = String.format(
+                "<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>" +
+                "<h2 style='color: #ebeb4b;'>Reset Your Password</h2>" +
+                "<p>Hello %s,</p>" +
+                "<p>We received a request to reset your password. Click the button below to reset it:</p>" +
+                "<a href='%s' style='display: inline-block; background-color: #ebeb4b; color: #111; padding: 12px 24px; text-decoration: none; border-radius: 4px; margin: 20px 0;'>Reset Password</a>" +
+                "<p>If you didn't request this, you can safely ignore this email.</p>" +
+                "<p>This link will expire in 1 hour.</p>" +
+                "<p>Best regards,<br>Fitness Freaks Team</p>" +
+                "</div>",
+                user.getUsername(),
+                resetLink
+            );
+
+            helper.setText(
+                String.format(
+                    "Hello %s,\n\n" +
+                    "We received a request to reset your password. Click the link below to reset it:\n\n" +
+                    "%s\n\n" +
+                    "If you didn't request this, you can safely ignore this email.\n\n" +
+                    "This link will expire in 1 hour.\n\n" +
+                    "Best regards,\n" +
+                    "Fitness Freaks Team",
+                    user.getUsername(),
+                    resetLink
+                ),
+                htmlContent
+            );
+            
+            mailSender.send(message);
+            return Map.of("message", "If an account exists with this email, you will receive a password reset link.");
+        } catch (MessagingException e) {
+            logger.error("Failed to send password reset email to {}: {}", email, e.getMessage());
+            return Map.of("message", "Failed to send reset email. Please try again later.");
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public Map<String, String> resetPassword(@RequestBody Map<String, String> payload) {
+        String token = payload.get("token");
+        String newPassword = payload.get("newPassword");
+
+        User user = userService.getUserByResetToken(token);
+        if (user == null) {
+            return Map.of("message", "Invalid or expired reset token.");
+        }
+
+        // Update password and clear reset token
+        user.setPassword(newPassword); // Note: Make sure to hash the password in UserService
+        user.setResetToken(null);
+        userService.saveUser(user);
+
+        return Map.of("message", "Password has been reset successfully.");
     }
 }

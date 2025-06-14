@@ -1,6 +1,7 @@
 package com.fitnessfreaks.backend.entity;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
@@ -21,7 +22,10 @@ public class User {
     private String otp; // 6-digit OTP for verification
     @Column(name = "is_verified")
     private boolean isVerified = false;
-
+    @Column(name = "reset_token")
+    private String resetToken;
+    @Column(name = "plan_start_date")
+    private LocalDateTime planStartDate;
     @Column(nullable = false)
     private boolean isAdmin = false;  // Default value is false
 
@@ -45,7 +49,10 @@ public class User {
     public void setOtp(String otp) { this.otp = otp; }
     public boolean isVerified() { return isVerified; }
     public void setVerified(boolean verified) { isVerified = verified; }
-
+    public String getResetToken() { return resetToken; }
+    public void setResetToken(String resetToken) { this.resetToken = resetToken; }
+    public LocalDateTime getPlanStartDate() { return planStartDate; }
+    public void setPlanStartDate(LocalDateTime planStartDate) { this.planStartDate = planStartDate; }
     public boolean getIsAdmin() {
         return isAdmin;
     }
