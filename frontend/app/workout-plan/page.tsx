@@ -1,172 +1,164 @@
-import Link from "next/link"
-import Image from "next/image"
+"use client"
 
-export default function WorkoutPlan() {
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import './workout-plan.css';
+
+const WorkoutPlan = () => {
+  const router = useRouter();
+  const [selectedPlan, setSelectedPlan] = useState('');
+  const [email, setEmail] = useState('');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        const { email } = JSON.parse(userData);
+        setEmail(email);
+      }
+    }
+  }, []);
+
+  const workoutPlans = [
+    {
+      name: 'ABS',
+      exercises: [
+        { name: 'Crunches', sets: 3, reps: 15 },
+        { name: 'Plank', sets: 3, duration: '30 seconds' },
+        { name: 'Russian Twists', sets: 3, reps: 20 },
+        { name: 'Leg Raises', sets: 3, reps: 12 }
+      ]
+    },
+    {
+      name: 'CHEST',
+      exercises: [
+        { name: 'Push-ups', sets: 3, reps: 15 },
+        { name: 'Dumbbell Press', sets: 3, reps: 12 },
+        { name: 'Cable Flyes', sets: 3, reps: 15 },
+        { name: 'Incline Bench Press', sets: 3, reps: 10 }
+      ]
+    },
+    {
+      name: 'ARM',
+      exercises: [
+        { name: 'Bicep Curls', sets: 3, reps: 12 },
+        { name: 'Tricep Dips', sets: 3, reps: 15 },
+        { name: 'Hammer Curls', sets: 3, reps: 12 },
+        { name: 'Tricep Pushdowns', sets: 3, reps: 15 }
+      ]
+    },
+    {
+      name: 'LEG',
+      exercises: [
+        { name: 'Squats', sets: 3, reps: 15 },
+        { name: 'Lunges', sets: 3, reps: 12 },
+        { name: 'Leg Press', sets: 3, reps: 12 },
+        { name: 'Calf Raises', sets: 3, reps: 20 }
+      ]
+    },
+    {
+      name: 'SHOULDER',
+      exercises: [
+        { name: 'Overhead Press', sets: 3, reps: 12 },
+        { name: 'Lateral Raises', sets: 3, reps: 15 },
+        { name: 'Front Raises', sets: 3, reps: 15 },
+        { name: 'Shrugs', sets: 3, reps: 12 }
+      ]
+    },
+    {
+      name: 'BACK',
+      exercises: [
+        { name: 'Pull-ups', sets: 3, reps: 10 },
+        { name: 'Rows', sets: 3, reps: 12 },
+        { name: 'Lat Pulldowns', sets: 3, reps: 15 },
+        { name: 'Deadlifts', sets: 3, reps: 10 }
+      ]
+    }
+  ];
+
+  const getImagePath = (planName: string) => {
+    const imageMap: { [key: string]: string } = {
+      'ABS': '/absworkout.jpg',
+      'CHEST': '/chestworkout.jpg',
+      'ARM': '/armworkout.jpg',
+      'LEG': '/legworkout.jpg',
+      'SHOULDER': '/shoulderworkout.jpg',
+      'BACK': '/backworkout.jpg'
+    };
+    return imageMap[planName] || '/default-workout.jpg';
+  };
+
+  const handlePlanSelect = (planName: string) => {
+    setSelectedPlan(planName);
+  };
+
+  const handleSendWorkout = async () => {
+    if (!selectedPlan) {
+      alert('Please select a plan');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:8080/api/workout-plans/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          category: selectedPlan,
+          exercises: workoutPlans.find(plan => plan.name === selectedPlan)?.exercises.map(ex => 
+            `${ex.name}: ${ex.sets} sets x ${ex.reps || ex.duration}`
+          )
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert('Workout plan sent successfully!');
+        setSelectedPlan('');
+      } else {
+        alert(data.message || 'Failed to send workout plan. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error sending workout plan:', error);
+      alert('An error occurred. Please try again.');
+    }
+  };
+
   return (
-    <body>
-      <section className="services" id="services">
-        <h2 className="heading">
-          WORKOUT <span>PLAN</span>
-        </h2>
-
-        <div className="services-content">
-          <div className="row">
-            <Image src="/absworkout.jpg" alt="Abs Workout" width={400} height={300} />
-            <h4>ABS WORKOUTS</h4>
-            <h4>
-              <Link href="#">
-                <p>View</p>
-              </Link>
-            </h4>
+    <section className="plans">
+      <h1 className="heading">Workout Plans</h1>
+      <div className="plans-content">
+        {workoutPlans.map((plan) => (
+          <div
+            key={plan.name}
+            className={`box ${selectedPlan === plan.name ? 'selected' : ''}`}
+            onClick={() => handlePlanSelect(plan.name)}
+          >
+            <img src={getImagePath(plan.name)} alt={`${plan.name} workout`} />
+            <h3>{plan.name}</h3>
+            <h2>Exercises:</h2>
+            <ul>
+              {plan.exercises.map((exercise, index) => (
+                <li key={index}>
+                  {exercise.name}: {exercise.sets} sets x {exercise.reps || exercise.duration}
+                </li>
+              ))}
+            </ul>
           </div>
-
-          <div className="row">
-            <Image src="/chestworkout.jpg" alt="Chest Workout" width={400} height={300} />
-            <h4>CHEST WORKOUTS</h4>
-            <h4>
-              <Link href="#">
-                <p>View</p>
-              </Link>
-            </h4>
-          </div>
-
-          <div className="row">
-            <Image src="/armworkout.jpg" alt="Arm Workout" width={400} height={300} />
-            <h4>ARM WORKOUTS</h4>
-            <h4>
-              <Link href="#">
-                <p>View</p>
-              </Link>
-            </h4>
-          </div>
-
-          <div className="row">
-            <Image src="/legworkout.jpg" alt="Leg Workout" width={400} height={300} />
-            <h4>LEG WORKOUTS</h4>
-            <h4>
-              <Link href="#">
-                <p>View</p>
-              </Link>
-            </h4>
-          </div>
-
-          <div className="row">
-            <Image src="/shoulderworkout.jpg" alt="Shoulder Workout" width={400} height={300} />
-            <h4>SHOULDER WORKOUTS</h4>
-            <h4>
-              <Link href="#">
-                <p>View</p>
-              </Link>
-            </h4>
-          </div>
-
-          <div className="row">
-            <Image src="/backworkout.jpg" alt="Back Workout" width={400} height={300} />
-            <h4>BACK WORKOUTS</h4>
-            <h4>
-              <Link href="#">
-                <p>View</p>
-              </Link>
-            </h4>
-          </div>
+        ))}
+      </div>
+      {selectedPlan && (
+        <div className="email-section">
+          <button onClick={handleSendWorkout} className="btn">
+            Send Workout Plan
+          </button>
         </div>
-      </section>
+      )}
+    </section>
+  );
+};
 
-      <section className="plans" id="plans">
-        <h2 className="heading">
-          <span></span>
-        </h2>
-
-        <div className="plans-content">
-          <div className="box">
-            <h3>ABS</h3>
-            <h2>
-              <span>Workouts</span>
-            </h2>
-            <ul>
-              <li>Hanging Knees</li>
-              <li>Hanging Leg Raises</li>
-              <li>Decline Crunch</li>
-              <li>Russian Twist</li>
-              <li>Abs Rollout</li>
-              <li>Plank</li>
-            </ul>
-          </div>
-
-          <div className="box">
-            <h3>CHEST</h3>
-            <h2>
-              <span>Workouts</span>
-            </h2>
-            <ul>
-              <li>Barbell Bench Press </li>
-              <li>Dumbbell Bench Press </li>
-              <li>Machine Chest Press</li>
-              <li>Cable cross-overs</li>
-              <li>Push-Up</li>
-              <li>Dips</li>
-            </ul>
-          </div>
-
-          <div className="box">
-            <h3>ARM</h3>
-            <h2>
-              <span>Workouts</span>
-            </h2>
-            <ul>
-              <li>Close-grip bench press</li>
-              <li>Cable overhead triceps extension</li>
-              <li>Triceps Extension</li>
-              <li>Barbell Curl</li>
-              <li>Standing Biceps Cable Curl</li>
-            </ul>
-          </div>
-
-          <div className="box">
-            <h3>LEG</h3>
-            <h2>
-              <span>Workouts</span>
-            </h2>
-            <ul>
-              <li>Leg extensions</li>
-              <li>Leg press</li>
-              <li>Adduction machine</li>
-              <li>Barbell deadlift</li>
-              <li>Squats</li>
-            </ul>
-          </div>
-
-          <div className="box">
-            <h3>SHOULDER</h3>
-            <h2>
-              <span>Workouts</span>
-            </h2>
-            <ul>
-              <li>Push-Press</li>
-              <li>Rear Delt Row</li>
-              <li>Seated Dumbbell Press</li>
-              <li>Lateral Raise</li>
-              <li>Front Raise</li>
-              <li>Arnold Press</li>
-            </ul>
-          </div>
-
-          <div className="box">
-            <h3>BACK</h3>
-            <h2>
-              <span>Workouts</span>
-            </h2>
-            <ul>
-              <li>Deadlift</li>
-              <li>Bent-over row</li>
-              <li>Pull-up</li>
-              <li>T-bar row</li>
-              <li>Seated row</li>
-              <li>Lat pull-down</li>
-            </ul>
-          </div>
-        </div>
-      </section>
-    </body>
-  )
-}
+export default WorkoutPlan;
