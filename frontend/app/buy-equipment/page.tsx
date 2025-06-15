@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Equipment, OrderItem } from "../../types/equipment";
-import { fetchEquipment } from "../../services/api";
+import { fetchEquipment,placeOrder } from "../../services/api";
 
 const formatDate = (dateString: string) => {
   if (!dateString) return "";
@@ -80,8 +80,9 @@ export default function BuyEquipmentPage() {
     if (!cartItems.length) return;
 
     setLoading(true);
+     const user = JSON.parse(localStorage.getItem("user") || "{}");
     try {
-      const user = JSON.parse(localStorage.getItem("user") || "{}");
+
       if (!user.id) throw new Error("Please log in to place an order");
 
       const orderData = {
@@ -93,7 +94,7 @@ export default function BuyEquipmentPage() {
       };
 
       const order = await placeOrder(orderData);
-      alert(`Order #${order.id} placed!`);
+      alert(`Your Order is  placed!`);
       setCartItems([]);
       setCartVisible(false);
     } catch (e: any) {
