@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -7,28 +7,37 @@ import Image from "next/image";
 import { Equipment, OrderItem } from "../../types/equipment";
 import { fetchEquipment, placeOrder } from "../../services/api";
 
+const formatDate = (dateString: string) => {
+  if (!dateString) return "";
+  return new Date(dateString).toLocaleString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
 export default function BuyEquipmentPage() {
   const router = useRouter();
   const [equipment, setEquipment] = useState<Equipment[]>([]);
   const [cartItems, setCartItems] = useState<OrderItem[]>([]);
   const [cartVisible, setCartVisible] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [ordersVisible, setOrdersVisible] = useState(false);
+  const [userOrders, setUserOrders] = useState<any[]>([]);
 
   useEffect(() => {
     const user = localStorage.getItem("user");
-
     if (!user) {
       router.push("/login");
       return;
     }
-    
     setLoading(true);
     fetchEquipment()
       .then(setEquipment)
       .catch((err) => alert(err.message))
       .finally(() => setLoading(false));
-
-
   }, [router]);
 
   const addToCart = (eq: Equipment) => {
@@ -45,9 +54,7 @@ export default function BuyEquipmentPage() {
     setLoading(true);
     try {
       const user = JSON.parse(localStorage.getItem("user") || "{}");
-      if (!user.id) {
-        throw new Error("Please log in to place an order");
-      }
+      if (!user.id) throw new Error("Please log in to place an order");
 
       const orderData = {
         user: { id: user.id },
@@ -65,6 +72,23 @@ export default function BuyEquipmentPage() {
       alert(e.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchUserOrders = async () => {
+    try {
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      const response = await fetch(
+        `http://localhost:8080/api/orders/user/${user.id}`
+      );
+      if (!response.ok) throw new Error("Failed to fetch orders");
+
+      const data = await response.json();
+      setUserOrders(data);
+      setOrdersVisible(true);
+    } catch (error: any) {
+      alert(error.message || "Failed to load your orders.");
+      console.error("Error fetching orders:", error);
     }
   };
 
@@ -86,6 +110,7 @@ export default function BuyEquipmentPage() {
         <h6 className="logo">
           Buy <span>Equipments</span>
         </h6>
+        
         <button
           id="cartlink"
           onClick={() => setCartVisible(true)}
@@ -98,6 +123,15 @@ export default function BuyEquipmentPage() {
           </p>
           <p style={{ display: "inline" }}>)</p>
         </button>
+
+        <button
+          className="yourorders"
+          onClick={fetchUserOrders}
+          id="yourorders"
+        >
+          <p style={{ display: "inline" }}>Your Orders</p>
+        </button>
+
       </div>
 
       <div className="BUY-content">
@@ -113,6 +147,7 @@ export default function BuyEquipmentPage() {
         ))}
       </div>
 
+      {/* 🛒 CART SECTION */}
       <div
         id="cartsection"
         className="cartsection"
@@ -143,13 +178,11 @@ export default function BuyEquipmentPage() {
           ))}
         </ul>
         <br />
-        <br />
         <h3 id="totalprice">
           {cartItems.length > 0
             ? `Total Price - ₹${total}`
             : "Your Cart Is Empty"}
         </h3>
-        <br />
         <br />
         <button
           id="placeorder"
@@ -160,6 +193,37 @@ export default function BuyEquipmentPage() {
           {loading ? "Placing..." : "Place Order"}
         </button>
       </div>
+
+      {/* 📦 ✨ YOUR ORDERS SECTION - styled like cart */}
+      {ordersVisible && (
+        <div className="cartsection" style={{ display: "block" }}>
+          <button onClick={() => setOrdersVisible(false)} className="close">
+            Close
+          </button>
+          <h2>Your Orders</h2>
+          {userOrders.length === 0 ? (
+            <p>No past orders found.</p>
+          ) : (
+            <ul style={{ listStyle: "none", paddingLeft: 0 }}>
+              {userOrders.map((order, index) => (
+                <li key={order.id} style={{ marginBottom: "20px", fontSize: "18px" }}>
+                  <strong>Order {index + 1} </strong>
+                  <span style={{ color: "#666" }}>
+                    ({formatDate(order.placedAt)})
+                  </span>
+                  <ul style={{ marginLeft: "15px", marginTop: "5px" }}>
+                    {order.items.map((item: any, index: number) => (
+                      <li key={index}>
+                        {item.name} - ₹{item.price}
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
     </div>
   );
 }
