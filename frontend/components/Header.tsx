@@ -87,6 +87,7 @@ export default function Header() {
               <Link href="/announcement">Announcements</Link>
               <Link href="/workout-plan">Work Out Plan</Link>
               <Link href="/bmi-calculator">BMI Calculator</Link>
+              <Link href="/diet">Diet Plan</Link>
             </div>
           </div>
         </li>

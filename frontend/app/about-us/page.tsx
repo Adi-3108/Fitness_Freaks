@@ -1,9 +1,20 @@
+"use client"
+
+import { useState, useEffect } from "react"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import Image from "next/image"
 import Link from "next/link"
 
 export default function AboutUs() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsLoggedIn(!!localStorage.getItem("user"))
+    }
+  }, [])
+
   return (
     <>
       <Header />
@@ -26,9 +37,11 @@ export default function AboutUs() {
                 to succeed. Join us today and be part of a thriving fitness family that inspires each other to reach new
                 heights!
               </p>
-              <Link href="/join" className="btn mt-3" style={{ marginTop: "20px" }}>
-                Join Us
-              </Link>
+              {!isLoggedIn && (
+                <Link href="/join" className="btn mt-3" style={{ marginTop: "20px" }}>
+                  Join Us
+                </Link>
+              )}
             </div>
             <div className="col-md-6" style={{ flex: "1", minWidth: "300px" }}>
               <Image

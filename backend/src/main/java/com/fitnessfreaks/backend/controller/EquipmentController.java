@@ -8,7 +8,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/equipment")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(originPatterns = "http://localhost:[*]")
 public class EquipmentController {
 
     private final EquipmentService service;

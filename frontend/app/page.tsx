@@ -1,14 +1,24 @@
 "use client"
+import React, { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
+import ReviewSection from "@/components/ReviewSection";
+import Head from "next/head";
 
 export default function Home() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsLoggedIn(!!localStorage.getItem("user"))
+    }
+  }, [])
+
   return (
     <>
       <Header />
-
       <section className="home" id="home">
         <div className="home-content">
           <h3 id="box">Build Your</h3>
@@ -18,9 +28,11 @@ export default function Home() {
           </h3>
           <p>Every Rep, Every Step you are one move closer to a stronger, healthier you. Start Your Journey Now!</p>
 
-          <Link href="/join" className="btn">
-            Join Us
-          </Link>
+          {!isLoggedIn && (
+            <Link href="/join" className="btn">
+              Join Us
+            </Link>
+          )}
         </div>
 
         <div className="home-img">
@@ -93,7 +105,28 @@ export default function Home() {
           </a>
         </div>
       </section>
+       <section className="diet-plan" id="diet">
+                        <h2 className="heading"><span>Diet </span>Importance</h2>
 
+                        <div className="diet-content">
+                          <div className="diet-text">
+                            <p>
+                             <span> A proper diet is just as essential as exercise when it comes to achieving your fitness
+                              goals in the gym. While workouts help build strength, endurance, and muscle, it's your
+                              diet that fuels these efforts and determines the results.</span>
+                              </p>
+                              <p>
+                               Skipping meals or following unstructured diets can lead to fatigue, poor performance,
+                              muscle loss, or even injury. Moreover, essential vitamins and minerals found in fruits
+                             and vegetables enhance your immune system, keep your metabolism functioning optimally,
+                             and contribute to better mental focus during training.
+                            </p>
+                          </div>
+                          <div className="diet-img">
+                            <Image src="/healthy.jpg" alt="Healthy Meal" width={500} height={350} />
+                          </div>
+                        </div>
+                      </section>
       <section className="plans" id="plans">
         <h2 className="heading">
           Our <span>Plans</span>
@@ -103,37 +136,44 @@ export default function Home() {
           <div className="box">
             <h3>BASIC</h3>
             <h2>
-              <span>Rs800/Month</span>
+              <span>Rs800</span>
             </h2>
+            <p style={{ color: "#ebeb4b", marginBottom: "15px", fontSize: "15px" }}>Duration: 1 Month</p>
             <ul>
               <li>Smart Workout Plan</li>
               <li>At Home Workout</li>
             </ul>
-            <Link href="/join">
-              Join Now
-              <i className="bx bx-right-arrow-alt"></i>
-            </Link>
+            {!isLoggedIn && (
+              <Link href="/join">
+                Join Now
+                <i className="bx bx-right-arrow-alt"></i>
+              </Link>
+            )}
           </div>
           <div className="box">
             <h3>PRO</h3>
             <h2>
-              <span>Rs1000/Month</span>
+              <span>Rs2200</span>
             </h2>
+            <p style={{ color: "#ebeb4b", marginBottom: "15px", fontSize: "15px" }}>Duration: 3 Months</p>
             <ul>
               <li>Pro Gyms</li>
               <li>At Home Workout</li>
               <li>Smart Workout Plan</li>
             </ul>
-            <Link href="/join">
-              Join Now
-              <i className="bx bx-right-arrow-alt"></i>
-            </Link>
+            {!isLoggedIn && (
+              <Link href="/join">
+                Join Now
+                <i className="bx bx-right-arrow-alt"></i>
+              </Link>
+            )}
           </div>
           <div className="box">
             <h3>PREMIUM</h3>
             <h2>
-              <span>Rs1500/Month</span>
+              <span>Rs5000</span>
             </h2>
+            <p style={{ color: "#ebeb4b", marginBottom: "15px", fontSize: "15px" }}>Duration: 6 Months</p>
             <ul>
               <li>Elite Gyms And Classes</li>
               <li>Pro GYMS</li>
@@ -141,68 +181,18 @@ export default function Home() {
               <li>At Home Workout</li>
               <li>Personal Training</li>
             </ul>
-            <Link href="/join">
-              Join Now
-              <i className="bx bx-right-arrow-alt"></i>
-            </Link>
+            {!isLoggedIn && (
+              <Link href="/join">
+                Join Now
+                <i className="bx bx-right-arrow-alt"></i>
+              </Link>
+            )}
           </div>
         </div>
       </section>
 
-      <section className="review" id="review">
-        <div className="review-box">
-          <h2 className="heading">
-            Client <span>Reviews</span>
-          </h2>
-          <div className="wrapper">
-            <div className="review-item">
-              <Image src="/1.jpg" alt="Tushar" width={150} height={150} />
-              <h2>Tushar</h2>
-              <div className="rating">
-                <i className="bx bx-star" id="star"></i>
-                <i className="bx bx-star" id="star"></i>
-                <i className="bx bx-star" id="star"></i>
-                <i className="bx bx-star" id="star"></i>
-                <i className="bx bx-star" id="star"></i>
-              </div>
-              <p>
-                &quot;Amazing gym with top-notch equipment and expert trainers! The personalized workout plans have
-                helped me reach goals I never thought possible. Highly recommend!&quot;
-              </p>
-            </div>
-            <div className="review-item">
-              <Image src="/2.jpg" alt="Ajeet" width={150} height={150} />
-              <h2>Ajeet</h2>
-              <div className="rating">
-                <i className="bx bx-star" id="star"></i>
-                <i className="bx bx-star" id="star"></i>
-                <i className="bx bx-star" id="star"></i>
-                <i className="bx bx-star" id="star"></i>
-              </div>
-              <p>
-                &quot;This gym offers a great mix of challenging workouts and supportive staff. The results have been
-                incredible, and I feel stronger every day!&quot;
-              </p>
-            </div>
-            <div className="review-item">
-              <Image src="/3.jpg" alt="Manan" width={150} height={150} />
-              <h2>Manan</h2>
-              <div className="rating">
-                <i className="bx bx-star" id="star"></i>
-                <i className="bx bx-star" id="star"></i>
-                <i className="bx bx-star" id="star"></i>
-                <i className="bx bx-star" id="star"></i>
-                <i className="bx bx-star" id="star"></i>
-              </div>
-              <p>
-                &quot;The fitness programs are excellent, and the environment is always motivating. I&apos;ve seen real
-                progress in my strength and overall health since joining!&quot;
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
+     
+      <ReviewSection />
       <Footer />
     </>
   )

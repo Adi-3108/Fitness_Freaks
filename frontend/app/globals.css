@@ -1113,3 +1113,540 @@ body.dark-mode {
   left: 100px;
   bottom: 200px;
 }
+
+.diet-content {
+                      display: flex;
+                      flex-wrap: wrap;
+                      gap: 2rem;
+                      align-items: center;
+                      justify-content: center;
+                      padding: 2rem 1rem;
+                      background-color: #111;
+                      color: white;
+                      border-radius: 12px;
+                      margin-top: 1.5rem;
+                    }
+
+                    .diet-text {
+                      flex: 1;
+                      min-width: 300px;
+                      max-width: 600px;
+                    }
+
+                    .diet-img {
+                      flex: 1;
+                      min-width: 280px;
+                      text-align: center;
+                    }
+
+                    .diet-text p {
+                      font-size: 2rem;
+                      line-height:2;
+                    }
+                    @media (max-width: 768px) {
+                      .diet-content {
+                        flex-direction: column;
+                      }
+                      }
+.leave-review form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 600px;
+  margin: auto;
+}
+
+.leave-review input,
+.leave-review select,
+.leave-review textarea {
+  padding: 0.8rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.leave-review button.btn {
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  padding: 0.8rem 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* Beautiful Review Form Styles */
+.review-form-container {
+  max-width: 800px;
+  margin: 4rem auto;
+  padding: 3rem;
+  background: linear-gradient(135deg, var(--snd-bg-color) 0%, rgba(255, 255, 255, 0.1) 100%);
+  border-radius: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.review-form-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--main-color), #ff6b6b, var(--main-color));
+  background-size: 200% 100%;
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { background-position: 200% 0; }
+  50% { background-position: -200% 0; }
+}
+
+.review-form-title {
+  font-size: 3.2rem;
+  color: var(--main-color);
+  text-align: center;
+  margin-bottom: 1rem;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.review-form-subtitle {
+  font-size: 1.8rem;
+  color: var(--text-color);
+  text-align: center;
+  margin-bottom: 3rem;
+  opacity: 0.8;
+  font-style: italic;
+}
+
+.review-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.form-group label {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: var(--main-color);
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 1.2rem 1.5rem;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-color);
+  font-size: 1.6rem;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+  font-style: italic;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--main-color);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 20px rgba(255, 77, 77, 0.3);
+  transform: translateY(-2px);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 120px;
+  font-family: inherit;
+  line-height: 1.6;
+}
+
+.form-group select {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 1rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 3rem;
+}
+
+.submit-review-btn {
+  background: linear-gradient(135deg, var(--main-color) 0%, #ff6b6b 100%);
+  color: white;
+  border: none;
+  padding: 1.5rem 3rem;
+  border-radius: 50px;
+  font-size: 1.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  box-shadow: 0 10px 30px rgba(255, 77, 77, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.submit-review-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+.submit-review-btn:hover::before {
+  left: 100%;
+}
+
+.submit-review-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 40px rgba(255, 77, 77, 0.6);
+  background: linear-gradient(135deg, #ff6b6b 0%, var(--main-color) 100%);
+}
+
+.submit-review-btn:active {
+  transform: translateY(-1px);
+}
+
+.submit-review-btn i {
+  font-size: 2rem;
+  transition: transform 0.3s ease;
+}
+
+.submit-review-btn:hover i {
+  transform: translateX(3px);
+}
+
+/* Responsive Design for Review Form */
+@media (max-width: 768px) {
+  .review-form-container {
+    margin: 2rem 1rem;
+    padding: 2rem;
+  }
+  
+  .review-form-title {
+    font-size: 2.4rem;
+  }
+  
+  .review-form-subtitle {
+    font-size: 1.4rem;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    padding: 1rem;
+    font-size: 1.4rem;
+  }
+  
+  .submit-review-btn {
+    padding: 1.2rem 2rem;
+    font-size: 1.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .review-form-container {
+    padding: 1.5rem;
+  }
+  
+  .review-form-title {
+    font-size: 2rem;
+  }
+  
+  .review-form-subtitle {
+    font-size: 1.2rem;
+  }
+}
+
+/* Average Rating Display Styles */
+.average-rating-container {
+  display: flex;
+  justify-content: center;
+  margin: 3rem 0;
+  padding: 2rem;
+}
+
+.average-rating-box {
+  background: linear-gradient(135deg, var(--main-color) 0%, #ff6b6b 100%);
+  border-radius: 20px;
+  padding: 3rem 4rem;
+  text-align: center;
+  box-shadow: 0 15px 35px rgba(255, 77, 77, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+  min-width: 300px;
+}
+
+.average-rating-box::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #ffd700, #ff6b6b, #ffd700);
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+.average-rating-number {
+  font-size: 4.8rem;
+  font-weight: 900;
+  color: white;
+  margin-bottom: 1rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  line-height: 1;
+}
+
+.average-rating-stars {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.average-rating-stars i {
+  font-size: 2.4rem;
+  color: rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.average-rating-stars i.filled {
+  color: #ffd700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  animation: starGlow 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes starGlow {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.1); }
+}
+
+.average-rating-text {
+  font-size: 1.6rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive Design for Average Rating */
+@media (max-width: 768px) {
+  .average-rating-container {
+    margin: 2rem 0;
+    padding: 1rem;
+  }
+  
+  .average-rating-box {
+    padding: 2rem 2.5rem;
+    min-width: 250px;
+  }
+  
+  .average-rating-number {
+    font-size: 3.6rem;
+  }
+  
+  .average-rating-stars i {
+    font-size: 2rem;
+  }
+  
+  .average-rating-text {
+    font-size: 1.4rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .average-rating-box {
+    padding: 1.5rem 2rem;
+    min-width: 200px;
+  }
+  
+  .average-rating-number {
+    font-size: 3rem;
+  }
+  
+  .average-rating-stars i {
+    font-size: 1.8rem;
+  }
+  
+  .average-rating-text {
+    font-size: 1.2rem;
+  }
+}
+
+/* My Diet Page Styles */
+.diet-section {
+  min-height: 100vh;
+  padding: 6rem 4% 2rem;
+  background: var(--bg-color);
+}
+
+.meals-container {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(380px, 1fr));
+  gap: 3rem;
+  margin-top: 3rem;
+  align-items: stretch;
+}
+
+.meal-box {
+  background: var(--snd-bg-color);
+  border-radius: 2rem;
+  box-shadow: 0 8px 32px rgba(235, 235, 75, 0.08);
+  padding: 2.5rem 2.5rem 2rem 2.5rem;
+  min-width: 340px;
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: box-shadow 0.3s, transform 0.3s;
+  border: 2px solid rgba(235, 235, 75, 0.12);
+  position: relative;
+  height: 520px;
+  box-sizing: border-box;
+}
+
+.meal-box:hover {
+  box-shadow: 0 12px 40px rgba(235, 235, 75, 0.18);
+  transform: translateY(-6px) scale(1.03);
+  border-color: var(--main-color);
+}
+
+.meal-title {
+  flex-shrink: 0;
+  font-size: 2.2rem;
+  color: var(--main-color);
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  letter-spacing: 1px;
+  text-align: center;
+}
+
+.meal-list {
+  flex: 1 1 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  justify-content: flex-start;
+}
+
+.meal-item {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  background: rgba(255,255,255,0.03);
+  border-radius: 1.2rem;
+  padding: 1.2rem 1.5rem;
+  box-shadow: 0 2px 8px rgba(235, 235, 75, 0.04);
+  transition: background 0.2s;
+}
+
+.meal-item:hover {
+  background: rgba(235, 235, 75, 0.08);
+}
+
+.meal-img {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--main-color);
+  background: #222;
+  box-shadow: 0 2px 8px rgba(235, 235, 75, 0.08);
+}
+
+.meal-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.meal-name {
+  font-size: 1.7rem;
+  color: #fff;
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+}
+
+.meal-calories {
+  font-size: 1.3rem;
+  color: var(--main-color);
+  font-weight: 500;
+  margin-left: 0.5rem;
+}
+
+@media (max-width: 900px) {
+  .meals-container {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  .meal-box {
+    padding: 2rem 1rem 1.5rem 1rem;
+    min-width: unset;
+    max-width: unset;
+    height: 400px;
+  }
+}
+
+@media (max-width: 600px) {
+  .diet-section {
+    padding: 4rem 2% 1rem;
+  }
+  .meal-title {
+    font-size: 1.6rem;
+  }
+  .meal-img {
+    width: 50px;
+    height: 50px;
+  }
+  .meal-name {
+    font-size: 1.2rem;
+  }
+  .meal-calories {
+    font-size: 1rem;
+  }
+}
+

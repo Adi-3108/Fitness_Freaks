@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Equipment, OrderItem } from "../../types/equipment";
-import { fetchEquipment, placeOrder } from "../../services/api";
+import { fetchEquipment } from "../../services/api";
 
 const formatDate = (dateString: string) => {
   if (!dateString) return "";
@@ -64,6 +64,7 @@ export default function BuyEquipmentPage() {
       .then(setEquipment)
       .catch((err) => alert(err.message))
       .finally(() => setLoading(false));
+
   }, [router]);
 
   const addToCart = (eq: Equipment) => {
@@ -77,6 +78,7 @@ export default function BuyEquipmentPage() {
 
   const handlePlaceOrder = async () => {
     if (!cartItems.length) return;
+
     setLoading(true);
     try {
       const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -98,7 +100,16 @@ export default function BuyEquipmentPage() {
       alert(e.message);
     } finally {
       setLoading(false);
+
     }
+
+    // Store cart items in localStorage for after payment confirmation
+    localStorage.setItem("equipmentCart", JSON.stringify(cartItems));
+    localStorage.setItem("equipmentUserEmail", user.email);
+    localStorage.setItem("equipmentUserId", user.id);
+    
+    // Redirect to payment page with cart total
+    router.push(`/payments?amount=${total}&email=${user.email}`);
   };
 
   const fetchUserOrders = async () => {
@@ -215,7 +226,7 @@ export default function BuyEquipmentPage() {
           onClick={handlePlaceOrder}
           disabled={loading}
         >
-          {loading ? "Placing..." : "Place Order"}
+          {loading ? "Processing..." : "Proceed to Payment"}
         </button>
       </div>
 

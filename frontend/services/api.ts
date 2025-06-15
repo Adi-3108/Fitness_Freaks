@@ -24,3 +24,27 @@ export const placeOrder = async (orderData: any) => {
 
   return response.json();
 };
+
+export async function sendWorkoutPlan(email: string, category: string): Promise<any> {
+  const res = await fetch(`${BASE}/api/workout-plans/send`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email, category }),
+  });
+  if (!res.ok) throw new Error("Failed to send workout plan");
+  return res.json();
+}
+
+export async function sendDietPlan(email: string, category: string): Promise<any> {
+  const res = await fetch(`${BASE}/api/diet-plans/send`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email, category }),
+  });
+  if (!res.ok) throw new Error("Failed to send diet plan");
+  return res.json();
+}
