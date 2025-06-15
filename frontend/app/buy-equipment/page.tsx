@@ -17,7 +17,33 @@ const formatDate = (dateString: string) => {
     minute: "2-digit",
   });
 };
+const calculateExpectedDelivery = (orderDate: string) => {
+  if (!orderDate) return "";
+  const date = new Date(orderDate);
+  date.setDate(date.getDate() + 4); // Add 5 days
+  return new Date(date).toLocaleString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+};
+const getDeliveryStatus = (orderDate: string) => {
+  if (!orderDate) return "";
+  const orderDateTime = new Date(orderDate);
+  const expectedDate = new Date(orderDateTime);
+  expectedDate.setDate(expectedDate.getDate() + 4);
+  const currentDate = new Date();
 
+  if (currentDate >= expectedDate) {
+    return "Delivered ✅";
+  } else {
+    return `Expected Delivery: ${expectedDate.toLocaleString("en-IN", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    })}`;
+  }
+};
 export default function BuyEquipmentPage() {
   const router = useRouter();
   const [equipment, setEquipment] = useState<Equipment[]>([]);
@@ -110,7 +136,7 @@ export default function BuyEquipmentPage() {
         <h6 className="logo">
           Buy <span>Equipments</span>
         </h6>
-        
+
         <button
           id="cartlink"
           onClick={() => setCartVisible(true)}
@@ -131,7 +157,6 @@ export default function BuyEquipmentPage() {
         >
           <p style={{ display: "inline" }}>Your Orders</p>
         </button>
-
       </div>
 
       <div className="BUY-content">
@@ -206,12 +231,63 @@ export default function BuyEquipmentPage() {
           ) : (
             <ul style={{ listStyle: "none", paddingLeft: 0 }}>
               {userOrders.map((order, index) => (
-                <li key={order.id} style={{ marginBottom: "20px", fontSize: "18px" }}>
+                // <li key={order.id} style={{ marginBottom: "20px", fontSize: "18px" }}>
+                //   <strong>Order {index + 1} </strong>
+                //   <span style={{ color: "#666" }}>
+                //     ({formatDate(order.placedAt)})
+                //   </span>
+                //   <ul style={{ marginLeft: "15px", marginTop: "5px" }}>
+                //     {order.items.map((item: any, index: number) => (
+                //       <li key={index}>
+                //         {item.name} - ₹{item.price}
+                //       </li>
+                //     ))}
+                //   </ul>
+                // </li>
+                // <li
+                //   key={order.id}
+                //   style={{ marginBottom: "20px", fontSize: "18px" }}
+                // >
+                //   <strong>Order {index + 1} </strong>
+                //   <div style={{ color: "#666", marginTop: "5px" }}>
+                //     Ordered: {formatDate(order.placedAt)}
+                //   </div>
+                //   <div
+                //     style={{
+                //       color: "#4CAF50",
+                //       marginTop: "5px",
+                //       fontSize: "16px",
+                //     }}
+                //   >
+                //     Expected Delivery:{" "}
+                //     {calculateExpectedDelivery(order.placedAt)}
+                //   </div>
+                //   <ul style={{ marginLeft: "15px", marginTop: "10px" }}>
+                //     {order.items.map((item: any, index: number) => (
+                //       <li key={index}>
+                //         {item.name} - ₹{item.price}
+                //       </li>
+                //     ))}
+                //   </ul>
+                // </li>
+                <li
+                  key={order.id}
+                  style={{ marginBottom: "20px", fontSize: "18px" }}
+                >
                   <strong>Order {index + 1} </strong>
-                  <span style={{ color: "#666" }}>
-                    ({formatDate(order.placedAt)})
-                  </span>
-                  <ul style={{ marginLeft: "15px", marginTop: "5px" }}>
+                  <div style={{ color: "#666", marginTop: "5px" }}>
+                    Ordered: {formatDate(order.placedAt)}
+                  </div>
+                  <div
+                    style={{
+                      color: "#4CAF50",
+                      marginTop: "5px",
+                      fontSize: "16px",
+                    }}
+                  >
+                    {getDeliveryStatus(order.placedAt)}
+                  </div>
+                  <ul style={{ marginLeft: "15px", marginTop: "10px" }}>
                     {order.items.map((item: any, index: number) => (
                       <li key={index}>
                         {item.name} - ₹{item.price}
