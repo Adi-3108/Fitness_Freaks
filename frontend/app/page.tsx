@@ -1,12 +1,21 @@
 "use client"
-import React from "react"
+import React, { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import ReviewSection from "@/components/ReviewSection";
 import Head from "next/head";
+
 export default function Home() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsLoggedIn(!!localStorage.getItem("user"))
+    }
+  }, [])
+
   return (
     <>
       <Header />
@@ -19,18 +28,17 @@ export default function Home() {
           </h3>
           <p>Every Rep, Every Step you are one move closer to a stronger, healthier you. Start Your Journey Now!</p>
 
-          <Link href="/join" className="btn">
-            Join Us
-          </Link>
+          {!isLoggedIn && (
+            <Link href="/join" className="btn">
+              Join Us
+            </Link>
+          )}
         </div>
 
         <div className="home-img">
           <Image src="/home image.jpg" alt="Home image" width={600} height={400} />
         </div>
-
-    </section>
-
-
+      </section>
 
       <section className="services" id="services">
         <h2 className="heading">
@@ -128,37 +136,44 @@ export default function Home() {
           <div className="box">
             <h3>BASIC</h3>
             <h2>
-              <span>Rs800/Month</span>
+              <span>Rs800</span>
             </h2>
+            <p style={{ color: "#ebeb4b", marginBottom: "15px", fontSize: "15px" }}>Duration: 1 Month</p>
             <ul>
               <li>Smart Workout Plan</li>
               <li>At Home Workout</li>
             </ul>
-            <Link href="/join">
-              Join Now
-              <i className="bx bx-right-arrow-alt"></i>
-            </Link>
+            {!isLoggedIn && (
+              <Link href="/join">
+                Join Now
+                <i className="bx bx-right-arrow-alt"></i>
+              </Link>
+            )}
           </div>
           <div className="box">
             <h3>PRO</h3>
             <h2>
-              <span>Rs1000/Month</span>
+              <span>Rs2200</span>
             </h2>
+            <p style={{ color: "#ebeb4b", marginBottom: "15px", fontSize: "15px" }}>Duration: 3 Months</p>
             <ul>
               <li>Pro Gyms</li>
               <li>At Home Workout</li>
               <li>Smart Workout Plan</li>
             </ul>
-            <Link href="/join">
-              Join Now
-              <i className="bx bx-right-arrow-alt"></i>
-            </Link>
+            {!isLoggedIn && (
+              <Link href="/join">
+                Join Now
+                <i className="bx bx-right-arrow-alt"></i>
+              </Link>
+            )}
           </div>
           <div className="box">
             <h3>PREMIUM</h3>
             <h2>
-              <span>Rs1500/Month</span>
+              <span>Rs5000</span>
             </h2>
+            <p style={{ color: "#ebeb4b", marginBottom: "15px", fontSize: "15px" }}>Duration: 6 Months</p>
             <ul>
               <li>Elite Gyms And Classes</li>
               <li>Pro GYMS</li>
@@ -166,10 +181,12 @@ export default function Home() {
               <li>At Home Workout</li>
               <li>Personal Training</li>
             </ul>
-            <Link href="/join">
-              Join Now
-              <i className="bx bx-right-arrow-alt"></i>
-            </Link>
+            {!isLoggedIn && (
+              <Link href="/join">
+                Join Now
+                <i className="bx bx-right-arrow-alt"></i>
+              </Link>
+            )}
           </div>
         </div>
       </section>
