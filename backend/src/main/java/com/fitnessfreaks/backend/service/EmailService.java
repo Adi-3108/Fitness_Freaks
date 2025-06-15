@@ -125,7 +125,6 @@ public class EmailService {
         messageText.append("\nDelivery Address: ").append(address);
         messageText.append("\nContact No:").append(number); 
         messageText.append("\nEstimated Delivery Date: ").append(expectedDate);
-        messageText.append("\nMode of Payment : Cash On Delivery\n\n");
         messageText.append("\n\nWe hope you stay fit and fabulous!\n\nCheers,\nFitness Freaks Team");
 
         sendEmail(to, "Order Confirmation - Fitness Freaks", messageText.toString());
