@@ -1,27 +1,64 @@
-"use client"
+"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Equipment, OrderItem } from "../../types/equipment";
-import { fetchEquipment } from "../../services/api";
+import { fetchEquipment,placeOrder } from "../../services/api";
 
+const formatDate = (dateString: string) => {
+  if (!dateString) return "";
+  return new Date(dateString).toLocaleString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+const calculateExpectedDelivery = (orderDate: string) => {
+  if (!orderDate) return "";
+  const date = new Date(orderDate);
+  date.setDate(date.getDate() + 4); // Add 5 days
+  return new Date(date).toLocaleString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+};
+const getDeliveryStatus = (orderDate: string) => {
+  if (!orderDate) return "";
+  const orderDateTime = new Date(orderDate);
+  const expectedDate = new Date(orderDateTime);
+  expectedDate.setDate(expectedDate.getDate() + 4);
+  const currentDate = new Date();
+
+  if (currentDate >= expectedDate) {
+    return "Delivered ✅";
+  } else {
+    return `Expected Delivery: ${expectedDate.toLocaleString("en-IN", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    })}`;
+  }
+};
 export default function BuyEquipmentPage() {
   const router = useRouter();
   const [equipment, setEquipment] = useState<Equipment[]>([]);
   const [cartItems, setCartItems] = useState<OrderItem[]>([]);
   const [cartVisible, setCartVisible] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [ordersVisible, setOrdersVisible] = useState(false);
+  const [userOrders, setUserOrders] = useState<any[]>([]);
 
   useEffect(() => {
     const user = localStorage.getItem("user");
-
     if (!user) {
       router.push("/login");
       return;
     }
-    
     setLoading(true);
     fetchEquipment()
       .then(setEquipment)
@@ -41,11 +78,30 @@ export default function BuyEquipmentPage() {
 
   const handlePlaceOrder = async () => {
     if (!cartItems.length) return;
-    
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    if (!user.email || !user.id) {
-      alert("Please log in to place an order");
-      return;
+
+    setLoading(true);
+     const user = JSON.parse(localStorage.getItem("user") || "{}");
+    try {
+
+      if (!user.id) throw new Error("Please log in to place an order");
+
+      const orderData = {
+        user: { id: user.id },
+        items: cartItems.map((item) => ({
+          name: item.name,
+          price: item.price,
+        })),
+      };
+
+      const order = await placeOrder(orderData);
+      alert(`Your Order is  placed!`);
+      setCartItems([]);
+      setCartVisible(false);
+    } catch (e: any) {
+      alert(e.message);
+    } finally {
+      setLoading(false);
+
     }
 
     // Store cart items in localStorage for after payment confirmation
@@ -55,6 +111,23 @@ export default function BuyEquipmentPage() {
     
     // Redirect to payment page with cart total
     router.push(`/payments?amount=${total}&email=${user.email}`);
+  };
+
+  const fetchUserOrders = async () => {
+    try {
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      const response = await fetch(
+        `http://localhost:8080/api/orders/user/${user.id}`
+      );
+      if (!response.ok) throw new Error("Failed to fetch orders");
+
+      const data = await response.json();
+      setUserOrders(data);
+      setOrdersVisible(true);
+    } catch (error: any) {
+      alert(error.message || "Failed to load your orders.");
+      console.error("Error fetching orders:", error);
+    }
   };
 
   return (
@@ -75,6 +148,7 @@ export default function BuyEquipmentPage() {
         <h6 className="logo">
           Buy <span>Equipments</span>
         </h6>
+
         <button
           id="cartlink"
           onClick={() => setCartVisible(true)}
@@ -86,6 +160,14 @@ export default function BuyEquipmentPage() {
             {cartItems.length}
           </p>
           <p style={{ display: "inline" }}>)</p>
+        </button>
+
+        <button
+          className="yourorders"
+          onClick={fetchUserOrders}
+          id="yourorders"
+        >
+          <p style={{ display: "inline" }}>Your Orders</p>
         </button>
       </div>
 
@@ -102,6 +184,7 @@ export default function BuyEquipmentPage() {
         ))}
       </div>
 
+      {/* 🛒 CART SECTION */}
       <div
         id="cartsection"
         className="cartsection"
@@ -132,13 +215,11 @@ export default function BuyEquipmentPage() {
           ))}
         </ul>
         <br />
-        <br />
         <h3 id="totalprice">
           {cartItems.length > 0
             ? `Total Price - ₹${total}`
             : "Your Cart Is Empty"}
         </h3>
-        <br />
         <br />
         <button
           id="placeorder"
@@ -149,6 +230,88 @@ export default function BuyEquipmentPage() {
           {loading ? "Processing..." : "Proceed to Payment"}
         </button>
       </div>
+
+      {/* 📦 ✨ YOUR ORDERS SECTION - styled like cart */}
+      {ordersVisible && (
+        <div className="cartsection" style={{ display: "block" }}>
+          <button onClick={() => setOrdersVisible(false)} className="close">
+            Close
+          </button>
+          <h2>Your Orders</h2>
+          {userOrders.length === 0 ? (
+            <p>No past orders found.</p>
+          ) : (
+            <ul style={{ listStyle: "none", paddingLeft: 0 }}>
+              {userOrders.map((order, index) => (
+                // <li key={order.id} style={{ marginBottom: "20px", fontSize: "18px" }}>
+                //   <strong>Order {index + 1} </strong>
+                //   <span style={{ color: "#666" }}>
+                //     ({formatDate(order.placedAt)})
+                //   </span>
+                //   <ul style={{ marginLeft: "15px", marginTop: "5px" }}>
+                //     {order.items.map((item: any, index: number) => (
+                //       <li key={index}>
+                //         {item.name} - ₹{item.price}
+                //       </li>
+                //     ))}
+                //   </ul>
+                // </li>
+                // <li
+                //   key={order.id}
+                //   style={{ marginBottom: "20px", fontSize: "18px" }}
+                // >
+                //   <strong>Order {index + 1} </strong>
+                //   <div style={{ color: "#666", marginTop: "5px" }}>
+                //     Ordered: {formatDate(order.placedAt)}
+                //   </div>
+                //   <div
+                //     style={{
+                //       color: "#4CAF50",
+                //       marginTop: "5px",
+                //       fontSize: "16px",
+                //     }}
+                //   >
+                //     Expected Delivery:{" "}
+                //     {calculateExpectedDelivery(order.placedAt)}
+                //   </div>
+                //   <ul style={{ marginLeft: "15px", marginTop: "10px" }}>
+                //     {order.items.map((item: any, index: number) => (
+                //       <li key={index}>
+                //         {item.name} - ₹{item.price}
+                //       </li>
+                //     ))}
+                //   </ul>
+                // </li>
+                <li
+                  key={order.id}
+                  style={{ marginBottom: "20px", fontSize: "18px" }}
+                >
+                  <strong>Order {index + 1} </strong>
+                  <div style={{ color: "#666", marginTop: "5px" }}>
+                    Ordered: {formatDate(order.placedAt)}
+                  </div>
+                  <div
+                    style={{
+                      color: "#4CAF50",
+                      marginTop: "5px",
+                      fontSize: "16px",
+                    }}
+                  >
+                    {getDeliveryStatus(order.placedAt)}
+                  </div>
+                  <ul style={{ marginLeft: "15px", marginTop: "10px" }}>
+                    {order.items.map((item: any, index: number) => (
+                      <li key={index}>
+                        {item.name} - ₹{item.price}
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
     </div>
   );
 }

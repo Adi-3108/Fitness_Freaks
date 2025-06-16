@@ -36,7 +36,7 @@ public class OrderService {
                     .map(item -> item.getName() + " - ₹" + item.getPrice())
                     .toList();
 
-            String arrivalDate = LocalDateTime.now().plusDays(5).toLocalDate().toString();
+            String arrivalDate = LocalDateTime.now().plusDays(4).toLocalDate().toString();
 
             emailService.sendOrderConfirmationEmail(
                     existingUser.getEmail(),
