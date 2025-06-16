@@ -14,6 +14,8 @@ export default function Login() {
   });
 
   const [showOtpDialog, setShowOtpDialog] = useState(false);
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,11 +60,13 @@ export default function Login() {
         }
         router.push("/");
       } else {
-        alert(data.message || "Login failed");
+        setErrorMessage(data.message || "Login failed");
+        setShowErrorDialog(true);
       }
     } catch (error) {
       console.error("Login error:", error);
-      alert("Something went wrong during login.");
+      setErrorMessage("Something went wrong during login.");
+      setShowErrorDialog(true);
     }
   };
 
@@ -71,12 +75,22 @@ export default function Login() {
     router.push("/verify-otp");
   };
 
+  const handleErrorDialogClose = () => {
+    setShowErrorDialog(false);
+  };
+
   return (
     <>
       <Dialog 
         isOpen={showOtpDialog}
         message="An OTP has been sent to your registered Email for Verification"
         onClose={handleOtpDialogClose}
+      />
+      <Dialog 
+        isOpen={showErrorDialog}
+        message={errorMessage}
+        onClose={handleErrorDialogClose}
+        type="info"
       />
       <div
         style={{
