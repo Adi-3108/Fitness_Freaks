@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
+import Dialog from "../app/components/Dialog";
 
 export default function ReviewSection() {
   // Always show only these three reviews on the homepage
@@ -36,6 +37,9 @@ export default function ReviewSection() {
   const [allReviews, setAllReviews] = useState([]);
   const [imageErrors, setImageErrors] = useState(new Set());
   const [allBackendReviews, setAllBackendReviews] = useState([]);
+  const [showDialog, setShowDialog] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState("");
+  const [dialogType, setDialogType] = useState('info');
 
   // Fetch all backend reviews on mount and after every submission
   const fetchAllBackendReviews = async () => {
@@ -94,7 +98,7 @@ export default function ReviewSection() {
     setImageErrors(prev => new Set(prev).add(reviewId));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmitReview = async (e) => {
     e.preventDefault();
     try {
       const res = await fetch("http://localhost:8080/api/reviews", {
@@ -108,122 +112,134 @@ export default function ReviewSection() {
           message,
         }),
       });
-      if (!res.ok) {
+      if (res.ok) {
+        setDialogMessage("Review submitted successfully! Thank you for your feedback.");
+        setDialogType('success');
+        setShowDialog(true);
+        setName("");
+        setRating("");
+        setMessage("");
+        // Fetch all backend reviews again to update average/count
+        fetchAllBackendReviews();
+      } else {
         const errorBody = await res.text();
-        console.error("Error submitting review:", errorBody);
-        alert(`Failed to submit review: ${errorBody}`);
-        return;
+        setDialogMessage(`Failed to submit review: ${errorBody}`);
+        setDialogType('info');
+        setShowDialog(true);
       }
-      alert("Review submitted successfully! Thank you for your feedback.");
-      setName("");
-      setRating("");
-      setMessage("");
-      // Fetch all backend reviews again to update average/count
-      fetchAllBackendReviews();
-    } catch (err) {
-      console.error("Caught error:", err);
-      alert("Network error. Please check your connection and try again.");
+    } catch (error) {
+      setDialogMessage("Network error. Please check your connection and try again.");
+      setDialogType('info');
+      setShowDialog(true);
     }
-}
+  };
 
   return (
-    <section className="review" id="review">
-      <div className="review-box">
-        <h2 className="heading">
-          Client <span>Reviews</span>
-        </h2>
-        {/* Average Rating Display (optional: you can use fixedReviews for this) */}
-        <div className="average-rating-container">
-          <div className="average-rating-box">
-            <div className="average-rating-number">
-              {calculateAverageRating(allBackendReviews)}
-            </div>
-            <div className="average-rating-stars">
-              {[...Array(5)].map((_, i) => (
-                <i 
-                  key={`avg-star-${i}`}
-                  className={`bx bx-star ${i < Math.floor(calculateAverageRating(allBackendReviews)) ? 'filled' : ''}`}
-                ></i>
-              ))}
-            </div>
-            <div className="average-rating-text">
-              Based on {getTotalReviews(allBackendReviews)} reviews
-            </div>
-          </div>
-        </div>
-        <div className="wrapper">
-          {fixedReviews.map((review, index) => (
-            <div className="review-item" key={`${review.id}-${index}`}>
-              <Image
-                src={imageErrors.has(review.id) ? "/1.jpg" : getValidImageUrl(review.imageUrl)}
-                alt={review.name}
-                width={150}
-                height={150}
-                onError={() => handleImageError(review.id)}
-                unoptimized={true}
-              />
-              <h2>{review.name}</h2>
-              <div className="rating">
-                {[...Array(review.rating)].map((_, i) => (
-                  <i className="bx bx-star" id="star" key={`${review.id}-star-${i}`}></i>
+    <>
+      <Dialog 
+        isOpen={showDialog}
+        message={dialogMessage}
+        onClose={() => setShowDialog(false)}
+        type={dialogType}
+      />
+      <section className="review" id="review">
+        <div className="review-box">
+          <h2 className="heading">
+            Client <span>Reviews</span>
+          </h2>
+          {/* Average Rating Display (optional: you can use fixedReviews for this) */}
+          <div className="average-rating-container">
+            <div className="average-rating-box">
+              <div className="average-rating-number">
+                {calculateAverageRating(allBackendReviews)}
+              </div>
+              <div className="average-rating-stars">
+                {[...Array(5)].map((_, i) => (
+                  <i 
+                    key={`avg-star-${i}`}
+                    className={`bx bx-star ${i < Math.floor(Number(calculateAverageRating(allBackendReviews))) ? 'filled' : ''}`}
+                  ></i>
                 ))}
               </div>
-              <p>&quot;{review.message}&quot;</p>
-            </div>
-          ))}
-        </div>
-        {/* 👇 Submit Review Form */}
-        <div className="review-form-container">
-          <h3 className="review-form-title">Share Your Experience</h3>
-          <p className="review-form-subtitle">Help others by sharing your fitness journey with us</p>
-        <form onSubmit={handleSubmit} className="review-form">
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="name">Your Name</label>
-          <input
-                  id="name"
-            type="text"
-                  placeholder="Enter your name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-              </div>
-              <div className="form-group">
-                <label htmlFor="rating">Rating</label>
-                <select
-                  id="rating"
-            value={rating}
-            onChange={(e) => setRating(e.target.value)}
-            required
-                >
-                  <option value="">Select rating</option>
-                  <option value="1">⭐ 1 Star</option>
-                  <option value="2">⭐⭐ 2 Stars</option>
-                  <option value="3">⭐⭐⭐ 3 Stars</option>
-                  <option value="4">⭐⭐⭐⭐ 4 Stars</option>
-                  <option value="5">⭐⭐⭐⭐⭐ 5 Stars</option>
-                </select>
+              <div className="average-rating-text">
+                Based on {getTotalReviews(allBackendReviews)} reviews
               </div>
             </div>
-            <div className="form-group">
-              <label htmlFor="message">Your Review</label>
-          <textarea
-                id="message"
-                placeholder="Tell us about your experience..."
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            required
-                rows="4"
-          />
-            </div>
-            <button type="submit" className="submit-review-btn">
-              <i className="bx bx-send"></i>
-              Submit Review
-            </button>
-        </form>
+          </div>
+          <div className="wrapper">
+            {fixedReviews.map((review, index) => (
+              <div className="review-item" key={`${review.id}-${index}`}>
+                <Image
+                  src={imageErrors.has(review.id) ? "/1.jpg" : getValidImageUrl(review.imageUrl)}
+                  alt={review.name}
+                  width={150}
+                  height={150}
+                  onError={() => handleImageError(review.id)}
+                  unoptimized={true}
+                />
+                <h2>{review.name}</h2>
+                <div className="rating">
+                  {[...Array(Number(review.rating))].map((_, i) => (
+                    <i className="bx bx-star" id="star" key={`${review.id}-star-${i}`}></i>
+                  ))}
+                </div>
+                <p>&quot;{review.message}&quot;</p>
+              </div>
+            ))}
+          </div>
+          {/* 👇 Submit Review Form */}
+          <div className="review-form-container">
+            <h3 className="review-form-title">Share Your Experience</h3>
+            <p className="review-form-subtitle">Help others by sharing your fitness journey with us</p>
+          <form onSubmit={handleSubmitReview} className="review-form">
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="name">Your Name</label>
+            <input
+                    id="name"
+              type="text"
+                    placeholder="Enter your name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="rating">Rating</label>
+                  <select
+                    id="rating"
+              value={rating}
+              onChange={(e) => setRating(e.target.value)}
+              required
+                  >
+                    <option value="">Select rating</option>
+                    <option value="1">⭐ 1 Star</option>
+                    <option value="2">⭐⭐ 2 Stars</option>
+                    <option value="3">⭐⭐⭐ 3 Stars</option>
+                    <option value="4">⭐⭐⭐⭐ 4 Stars</option>
+                    <option value="5">⭐⭐⭐⭐⭐ 5 Stars</option>
+                  </select>
+                </div>
+              </div>
+              <div className="form-group">
+                <label htmlFor="message">Your Review</label>
+            <textarea
+                  id="message"
+                  placeholder="Tell us about your experience..."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              required
+                  rows="4"
+            />
+              </div>
+              <button type="submit" className="submit-review-btn">
+                <i className="bx bx-send"></i>
+                Submit Review
+              </button>
+          </form>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 }

@@ -4,10 +4,24 @@ import { useEffect, useState, useRef } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
+import Dialog from "../../app/components/Dialog"
+import ReactCrop, { Crop } from 'react-image-crop'
+import 'react-image-crop/dist/ReactCrop.css'
 
 export default function UserProfile() {
   const [user, setUser] = useState<any>(null)
   const [profilePic, setProfilePic] = useState<string | null>(null)
+  const [previewPic, setPreviewPic] = useState<string | null>(null)
+  const [showPreview, setShowPreview] = useState(false)
+  const [crop, setCrop] = useState<Crop>({
+    unit: '%',
+    width: 90,
+    height: 90,
+    x: 5,
+    y: 5
+  })
+  const [croppedImage, setCroppedImage] = useState<string | null>(null)
+  const imageRef = useRef<HTMLImageElement>(null)
   const router = useRouter()
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [cancelReason, setCancelReason] = useState("")
@@ -26,6 +40,9 @@ export default function UserProfile() {
   const [workoutTypeDraft, setWorkoutTypeDraft] = useState<string[]>([]);
   const [showRemainingTime, setShowRemainingTime] = useState(false);
   const [remainingTime, setRemainingTime] = useState("");
+  const [showDialog, setShowDialog] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState("");
+  const [dialogType, setDialogType] = useState<'success' | 'info'>('info');
 
   const workoutOptions = [
     "Deadlift",
@@ -73,17 +90,101 @@ export default function UserProfile() {
     if (file) {
       const reader = new FileReader()
       reader.onload = () => {
-        setProfilePic(reader.result as string)
-        // Save to user object in localStorage
-        if (user) {
-          const updatedUser = { ...user, profilePic: reader.result }
-          setUser(updatedUser)
-          localStorage.setItem("user", JSON.stringify(updatedUser))
-        }
-        localStorage.setItem("profilePic", reader.result as string)
+        setPreviewPic(reader.result as string)
+        setShowPreview(true)
+        // Reset crop when new image is loaded
+        setCrop({
+          unit: '%',
+          width: 90,
+          height: 90,
+          x: 5,
+          y: 5
+        })
       }
       reader.readAsDataURL(file)
     }
+  }
+
+  const getCroppedImg = (image: HTMLImageElement, crop: Crop): Promise<string> => {
+    const canvas = document.createElement('canvas')
+    const scaleX = image.naturalWidth / image.width
+    const scaleY = image.naturalHeight / image.height
+    canvas.width = crop.width
+    canvas.height = crop.height
+    const ctx = canvas.getContext('2d')
+
+    if (!ctx) {
+      throw new Error('No 2d context')
+    }
+
+    ctx.drawImage(
+      image,
+      crop.x * scaleX,
+      crop.y * scaleY,
+      crop.width * scaleX,
+      crop.height * scaleY,
+      0,
+      0,
+      crop.width,
+      crop.height
+    )
+
+    return new Promise((resolve) => {
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          throw new Error('Canvas is empty')
+        }
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          resolve(reader.result as string)
+        }
+        reader.readAsDataURL(blob)
+      }, 'image/jpeg', 0.95)
+    })
+  }
+
+  const handleSaveProfilePic = async () => {
+    if (imageRef.current && crop) {
+      try {
+        const croppedImageUrl = await getCroppedImg(imageRef.current, crop)
+        setProfilePic(croppedImageUrl)
+        // Save to user object in localStorage
+        if (user) {
+          const updatedUser = { ...user, profilePic: croppedImageUrl }
+          setUser(updatedUser)
+          localStorage.setItem("user", JSON.stringify(updatedUser))
+        }
+        localStorage.setItem("profilePic", croppedImageUrl)
+        setShowPreview(false)
+        setPreviewPic(null)
+        setCroppedImage(null)
+        setDialogMessage("Profile picture updated successfully!");
+        setDialogType('success');
+        setShowDialog(true);
+      } catch (e) {
+        setDialogMessage("Failed to crop image. Please try again.");
+        setDialogType('info');
+        setShowDialog(true);
+      }
+    }
+  }
+
+  const handleCancelPreview = () => {
+    setShowPreview(false)
+    setPreviewPic(null)
+  }
+
+  const handleRemoveProfilePic = () => {
+    setProfilePic(null)
+    if (user) {
+      const updatedUser = { ...user, profilePic: null }
+      setUser(updatedUser)
+      localStorage.setItem("user", JSON.stringify(updatedUser))
+    }
+    localStorage.removeItem("profilePic")
+    setDialogMessage("Profile picture removed successfully!");
+    setDialogType('success');
+    setShowDialog(true);
   }
 
   // When type changes, reset workoutTypeDraft
@@ -123,7 +224,9 @@ useEffect(() => {
       } catch (e) {
         errorMsg = await res.text();
       }
-      alert(errorMsg);
+      setDialogMessage(errorMsg);
+      setDialogType('info');
+      setShowDialog(true);
     }
   };
 
@@ -190,458 +293,524 @@ useEffect(() => {
     }
   };
 
+  const handleUpdateProfile = async () => {
+    try {
+      // ... existing code ...
+    } catch (error) {
+      setDialogMessage(error instanceof Error ? error.message : "An error occurred");
+      setDialogType('info');
+      setShowDialog(true);
+    }
+  };
+
   if (!user) return null
 
   return (
-    <div style={{ minHeight: "100vh", background: "#000", fontFamily: "inherit" }}>
-      <header style={{ display: "flex", alignItems: "center", padding: "24px 48px", background: "#000", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
-        <Link href="/" className="logo" style={{ fontSize: 36, fontWeight: 700, color: "#fff", textDecoration: "none", marginRight: 32, letterSpacing: 1, transition: 'color 0.2s, transform 0.2s' }}>
-          <span className="logo-hover">Fitness <span style={{ color: "#fff" }}>Freaks</span></span>
-        </Link>
-        <nav style={{ flex: 1 }}>
-          <Link href="/" style={{ marginRight: 32, marginLeft: 300, color: "#ebeb4b", textDecoration: "none", fontWeight: 500, fontSize: 20, transition: 'color 0.2s, text-decoration 0.2s, transform 0.2s' }} className="nav-hover">Home</Link>
-          <Link href="/#services" style={{ marginRight: 32, color: "#ebeb4b", textDecoration: "none", fontWeight: 500, fontSize: 20, transition: 'color 0.2s, text-decoration 0.2s, transform 0.2s' }} className="nav-hover">Services</Link>
-          <Link href="/#plans" style={{ marginRight: 32, color: "#ebeb4b", textDecoration: "none", fontWeight: 500, fontSize: 20, transition: 'color 0.2s, text-decoration 0.2s, transform 0.2s' }} className="nav-hover">Plans</Link>
-        </nav>
-        <button
-          onClick={() => {
-            if (confirm("Are you sure you want to log out?")) {
-              localStorage.removeItem("user")
-              localStorage.removeItem("username")
-              router.push("/")
-            }
-          }}
-          style={{
-            background: "#e74c3c",
-            color: "#fff",
-            border: "none",
-            borderRadius: 8,
-            padding: "12px 32px",
-            fontSize: 20,
-            fontWeight: 600,
-            cursor: "pointer",
-            transition: 'background 0.2s, transform 0.2s'
-          }}
-          className="logout-hover"
-        >
-          Logout
-        </button>
-      </header>
-      <main style={{ maxWidth: 1000, margin: "48px auto", background: "#000", borderRadius: 24, boxShadow: "0 8px 32px rgb(255, 255, 255)", padding: 48, display: "flex", alignItems: "center", gap: 64 }}>
-        <div>
-          <Image src={profilePic || require("../../public/user-icon.jpg")}
-            alt="User"
-            width={200}
-            height={200}
-            style={{ borderRadius: "50%", border: "4px solid #27ae60", background: "#e0e0e0", objectFit: "cover", objectPosition: "center" }}
-          />
-          <div style={{ marginTop: 16, textAlign: "center" }}>
-            <input
-              type="file"
-              accept="image/*"
-              id="profilePicInput"
-              style={{ display: "none" }}
-              onChange={handleProfilePicChange}
-            />
-            <button
-              style={{
-                background: "#ebeb4b",
-                color: "#232526",
-                border: "none",
-                borderRadius: 8,
-                padding: "10px 24px",
-                fontSize: 18,
-                fontWeight: 600,
-                cursor: "pointer",
-                marginTop: 8,
-                transition: 'background 0.2s, transform 0.2s'
-              }}
-              onClick={() => document.getElementById("profilePicInput")?.click()}
-              className="change-profile-hover"
-            >
-              Change Profile
-            </button>
-          </div>
-        </div>
-        <div
-          style={{
-            flex: 1,
-            background: "linear-gradient(135deg, #181818 60%, #232526 100%)",
-            border: "2px solid #ebeb4b",
-            borderRadius: 18,
-            boxShadow: "0 4px 32px 0 rgba(235,235,75,0.10)",
-            padding: "48px 48px 36px 48px",
-            marginTop: 8,
-            marginBottom: 8,
-            display: "flex",
-            flexDirection: "column",
-            gap: 8,
-            minWidth: 600, // increased minWidth
-            maxWidth: 900, // increased maxWidth
-            position: "relative",
-            overflow: "hidden"
-          }}
-        >
-          <div style={{ marginBottom: 0 }}>
-            <div style={{ fontSize: 32, color: "#ebeb4b", fontWeight: 700, textShadow: "0 2px 8px #232526" }}>
-              Welcome!
-            </div>
-            <div style={{ fontSize: 40, color: "#ebeb4b", marginBottom: 12, fontWeight: 700, textShadow: "0 2px 8px #232526" }}>
-              {user.username}
-            </div>
-          </div>
-          <p style={{ color: "#fff", fontSize: 22, marginBottom: 32, fontWeight: 500 }}>
-            Thank you for being a part of Fitness Freaks!
-          </p>
-          <div style={{ marginBottom: 24 }}>
-            <button
-              onClick={() => {
-                setShowRemainingTime(!showRemainingTime);
-                if (!showRemainingTime) {
-                  calculateRemainingTime();
-                }
-              }}
-              style={{
-                background: "#ebeb4b",
-                color: "#232526",
-                border: "none",
-                borderRadius: 8,
-                padding: "12px 24px",
-                fontSize: 18,
-                fontWeight: 600,
-                cursor: "pointer",
-                transition: 'background 0.2s, transform 0.2s',
-                display: "flex",
-                alignItems: "center",
-                gap: "8px"
-              }}
-              className="check-time-hover"
-            >
-              <i className="bx bx-time"></i>
-              {showRemainingTime ? "Hide Remaining Time" : "Plan Expiry"}
-            </button>
-            {showRemainingTime && remainingTime && (
-              <div
-                style={{
-                  marginTop: 16,
-                  padding: 20,
-                  background: "rgba(235, 235, 75, 0.1)",
-                  borderRadius: 8,
-                  border: "2px solid #ebeb4b",
-                  color: "#ebeb4b",
-                  fontSize: "1.4rem",
-                  fontWeight: 600,
-                  textAlign: "center",
-                  textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                  boxShadow: "0 4px 8px rgba(0,0,0,0.2)"
-                }}
-              >
-                {remainingTime}
-              </div>
-            )}
-          </div>
-          <div style={{ fontSize: 22, marginBottom: 12, display: "flex", alignItems: "center", flexWrap: "wrap" }}>
-            <span style={{ color: "#fff", fontWeight: 600, minWidth: 90 }}>Email:</span>
-            <span style={{
-              color: "#ebeb4b",
-              marginLeft: 12,
-              wordBreak: "break-all",
-              overflowWrap: "break-word",
-              maxWidth: "calc(100% - 110px)",
-              display: "inline-block"
-            }}>{user.email}</span>
-          </div>
-          <div style={{ fontSize: 22, marginBottom: 12, display: "flex", alignItems: "center" }}>
-            <span style={{ color: "#fff", fontWeight: 600, minWidth: 90 }}>Phone:</span>
-            <span style={{ color: "#ebeb4b", marginLeft: 12 }}>{user.phoneNumber}</span>
-          </div>
-          <div style={{ fontSize: 22, marginBottom: 12, display: "flex", alignItems: "center" }}>
-            <span style={{ color: "#fff", fontWeight: 600, minWidth: 90 }}>Address:</span>
-            <span style={{ color: "#ebeb4b", marginLeft: 12 }}>{user.address}</span>
-          </div>
-          <div style={{ fontSize: 22, marginBottom: 12, display: "flex", alignItems: "center" }}>
-            <span style={{ color: "#fff", fontWeight: 600, minWidth: 90 }}>Plan:</span>
-            <span style={{ color: "#ebeb4b", marginLeft: 12 }}>{user.plan}</span>
-          </div>
-          <div style={{ fontSize: 22, marginBottom: 12, display: "flex", alignItems: "center" }}>
-            <span style={{ color: "#fff", fontWeight: 600, minWidth: 90 }}>Joined:</span>
-            <span style={{ color: "#ebeb4b", marginLeft: 12 }}>
-              {user.createdAt ? new Date(user.createdAt).toLocaleString() : `User #${user.id}`}
-            </span>
-          </div>
-
-          {/* Diet Plan Button */}
+    <>
+      <Dialog 
+        isOpen={showDialog}
+        message={dialogMessage}
+        onClose={() => setShowDialog(false)}
+        type={dialogType}
+      />
+      <div style={{ minHeight: "100vh", background: "#000", fontFamily: "inherit" }}>
+        <header style={{ display: "flex", alignItems: "center", padding: "24px 48px", background: "#000", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+          <Link href="/" className="logo" style={{ fontSize: 36, fontWeight: 700, color: "#fff", textDecoration: "none", marginRight: 32, letterSpacing: 1, transition: 'color 0.2s, transform 0.2s' }}>
+            <span className="logo-hover">Fitness <span style={{ color: "#fff" }}>Freaks</span></span>
+          </Link>
+          <nav style={{ flex: 1 }}>
+            <Link href="/" style={{ marginRight: 32, marginLeft: 300, color: "#ebeb4b", textDecoration: "none", fontWeight: 500, fontSize: 20, transition: 'color 0.2s, text-decoration 0.2s, transform 0.2s' }} className="nav-hover">Home</Link>
+            <Link href="/#services" style={{ marginRight: 32, color: "#ebeb4b", textDecoration: "none", fontWeight: 500, fontSize: 20, transition: 'color 0.2s, text-decoration 0.2s, transform 0.2s' }} className="nav-hover">Services</Link>
+            <Link href="/#plans" style={{ marginRight: 32, color: "#ebeb4b", textDecoration: "none", fontWeight: 500, fontSize: 20, transition: 'color 0.2s, text-decoration 0.2s, transform 0.2s' }} className="nav-hover">Plans</Link>
+          </nav>
           <button
-            style={{
-              marginTop: 16,
-              padding: "14px 36px",
-              fontSize: 20,
-              borderRadius: 10,
-              background: "#ebeb4b",
-              color: "#232526",
-              border: "none",
-              cursor: "pointer",
-              fontWeight: 600,
-              transition: 'background 0.2s, transform 0.2s',
-              marginBottom: 16,
-              alignSelf: "flex-start"
+            onClick={() => {
+              if (confirm("Are you sure you want to log out?")) {
+                localStorage.removeItem("user")
+                localStorage.removeItem("username")
+                router.push("/")
+              }
             }}
-            onClick={() => router.push("/my-diet")}
-          >
-            View My Diet Plan
-          </button>
-
-          <button
             style={{
-              marginTop: 32,
-              padding: "16px 40px",
-              fontSize: 22,
-              borderRadius: 10,
               background: "#e74c3c",
               color: "#fff",
               border: "none",
-              cursor: "pointer",
+              borderRadius: 8,
+              padding: "12px 32px",
+              fontSize: 20,
               fontWeight: 600,
-              transition: 'background 0.2s, transform 0.2s',
-              alignSelf: "center",
-              boxShadow: "0 2px 12px 0 rgba(231,76,60,0.10)"
+              cursor: "pointer",
+              transition: 'background 0.2s, transform 0.2s'
             }}
-            onClick={() => setShowCancelModal(true)}
-            className="cancel-sub-hover"
+            className="logout-hover"
           >
-            Cancel Subscription
+            Logout
           </button>
-        </div>
-      </main>
-      <div
-        style={{
-          marginTop: 40,
-          background: "#000",
-          borderRadius: 24,
-          boxShadow: "0 8px 32px rgb(255, 255, 255)",
-          padding: 48,
-          maxWidth: 1000,
-          marginLeft: "auto",
-          marginRight: "auto",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center"
-        }}
-      >
-        <h3 style={{ color: '#ebeb4b', fontSize: 28, marginBottom: 16, textAlign: "center" }}>My Schedule</h3>
-        <form
-          onSubmit={handleAddSchedule}
+        </header>
+        <main style={{ maxWidth: 1000, margin: "48px auto", background: "#000", borderRadius: 24, boxShadow: "0 8px 32px rgb(255, 255, 255)", padding: 48, display: "flex", alignItems: "center", gap: 64 }}>
+          <div>
+            <div style={{ position: 'relative' }}>
+              <Image 
+                src={profilePic || require("../../public/user-icon.jpg")}
+                alt="User"
+                width={200}
+                height={200}
+                style={{ borderRadius: "50%", border: "4px solid #27ae60", background: "#e0e0e0", objectFit: "cover", objectPosition: "center" }}
+              />
+              <label
+                htmlFor="profilePic"
+                style={{
+                  position: "absolute",
+                  bottom: 0,
+                  right: 0,
+                  background: "#ebeb4b",
+                  color: "#000",
+                  width: 36,
+                  height: 36,
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  transition: "transform 0.2s"
+                }}
+                title="Change profile picture"
+              >
+                📷
+              </label>
+              <input
+                type="file"
+                id="profilePic"
+                accept="image/*"
+                onChange={handleProfilePicChange}
+                style={{ display: "none" }}
+              />
+              {profilePic && (
+                <button
+                  onClick={handleRemoveProfilePic}
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    right: 0,
+                    background: "#e74c3c",
+                    color: "#fff",
+                    width: 36,
+                    height: 36,
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                    border: "none",
+                    transition: "transform 0.2s"
+                  }}
+                  title="Remove profile picture"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+            <div style={{ marginTop: 16, textAlign: "center" }}>
+              <button
+                onClick={() => document.getElementById('profilePic')?.click()}
+                style={{
+                  background: "#ebeb4b",
+                  color: "#232526",
+                  border: "none",
+                  borderRadius: 8,
+                  padding: "10px 24px",
+                  fontSize: 18,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  marginTop: 8,
+                  transition: 'background 0.2s, transform 0.2s'
+                }}
+                className="change-profile-hover"
+              >
+                Change Profile
+              </button>
+            </div>
+          </div>
+          <div
+            style={{
+              flex: 1,
+              background: "linear-gradient(135deg, #181818 60%, #232526 100%)",
+              border: "2px solid #ebeb4b",
+              borderRadius: 18,
+              boxShadow: "0 4px 32px 0 rgba(235,235,75,0.10)",
+              padding: "48px 48px 36px 48px",
+              marginTop: 8,
+              marginBottom: 8,
+              display: "flex",
+              flexDirection: "column",
+              gap: 8,
+              minWidth: 600,
+              maxWidth: 900,
+              position: "relative",
+              overflow: "hidden"
+            }}
+          >
+            <div style={{ marginBottom: 0 }}>
+              <div style={{ fontSize: 32, color: "#ebeb4b", fontWeight: 700, textShadow: "0 2px 8px #232526" }}>
+                Welcome!
+              </div>
+              <div style={{ fontSize: 40, color: "#ebeb4b", marginBottom: 12, fontWeight: 700, textShadow: "0 2px 8px #232526" }}>
+                {user.username}
+              </div>
+            </div>
+            <p style={{ color: "#fff", fontSize: 22, marginBottom: 32, fontWeight: 500 }}>
+              Thank you for being a part of Fitness Freaks!
+            </p>
+            <div style={{ marginBottom: 24 }}>
+              <button
+                onClick={() => {
+                  setShowRemainingTime(!showRemainingTime);
+                  if (!showRemainingTime) {
+                    calculateRemainingTime();
+                  }
+                }}
+                style={{
+                  background: "#ebeb4b",
+                  color: "#232526",
+                  border: "none",
+                  borderRadius: 8,
+                  padding: "12px 24px",
+                  fontSize: 18,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  transition: 'background 0.2s, transform 0.2s',
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px"
+                }}
+                className="check-time-hover"
+              >
+                <i className="bx bx-time"></i>
+                {showRemainingTime ? "Hide Remaining Time" : "Plan Expiry"}
+              </button>
+              {showRemainingTime && remainingTime && (
+                <div
+                  style={{
+                    marginTop: 16,
+                    padding: 20,
+                    background: "rgba(235, 235, 75, 0.1)",
+                    borderRadius: 8,
+                    border: "2px solid #ebeb4b",
+                    color: "#ebeb4b",
+                    fontSize: "1.4rem",
+                    fontWeight: 600,
+                    textAlign: "center",
+                    textShadow: "0 2px 4px rgba(0,0,0,0.3)",
+                    boxShadow: "0 4px 8px rgba(0,0,0,0.2)"
+                  }}
+                >
+                  {remainingTime}
+                </div>
+              )}
+            </div>
+            <div style={{ fontSize: 22, marginBottom: 12, display: "flex", alignItems: "center", flexWrap: "wrap" }}>
+              <span style={{ color: "#fff", fontWeight: 600, minWidth: 90 }}>Email:</span>
+              <span style={{
+                color: "#ebeb4b",
+                marginLeft: 12,
+                wordBreak: "break-all",
+                overflowWrap: "break-word",
+                maxWidth: "calc(100% - 110px)",
+                display: "inline-block"
+              }}>{user.email}</span>
+            </div>
+            <div style={{ fontSize: 22, marginBottom: 12, display: "flex", alignItems: "center" }}>
+              <span style={{ color: "#fff", fontWeight: 600, minWidth: 90 }}>Phone:</span>
+              <span style={{ color: "#ebeb4b", marginLeft: 12 }}>{user.phoneNumber}</span>
+            </div>
+            <div style={{ fontSize: 22, marginBottom: 12, display: "flex", alignItems: "center" }}>
+              <span style={{ color: "#fff", fontWeight: 600, minWidth: 90 }}>Address:</span>
+              <span style={{ color: "#ebeb4b", marginLeft: 12 }}>{user.address}</span>
+            </div>
+            <div style={{ fontSize: 22, marginBottom: 12, display: "flex", alignItems: "center" }}>
+              <span style={{ color: "#fff", fontWeight: 600, minWidth: 90 }}>Plan:</span>
+              <span style={{ color: "#ebeb4b", marginLeft: 12 }}>{user.plan}</span>
+            </div>
+            <div style={{ fontSize: 22, marginBottom: 12, display: "flex", alignItems: "center" }}>
+              <span style={{ color: "#fff", fontWeight: 600, minWidth: 90 }}>Joined:</span>
+              <span style={{ color: "#ebeb4b", marginLeft: 12 }}>
+                {user.createdAt ? new Date(user.createdAt).toLocaleString() : `User #${user.id}`}
+              </span>
+            </div>
+
+            {/* Diet Plan Button */}
+            <button
+              style={{
+                marginTop: 16,
+                padding: "14px 36px",
+                fontSize: 20,
+                borderRadius: 10,
+                background: "#ebeb4b",
+                color: "#232526",
+                border: "none",
+                cursor: "pointer",
+                fontWeight: 600,
+                transition: 'background 0.2s, transform 0.2s',
+                marginBottom: 16,
+                alignSelf: "flex-start"
+              }}
+              onClick={() => router.push("/my-diet")}
+            >
+              View My Diet Plan
+            </button>
+
+            <button
+              style={{
+                marginTop: 32,
+                padding: "16px 40px",
+                fontSize: 22,
+                borderRadius: 10,
+                background: "#e74c3c",
+                color: "#fff",
+                border: "none",
+                cursor: "pointer",
+                fontWeight: 600,
+                transition: 'background 0.2s, transform 0.2s',
+                alignSelf: "center",
+                boxShadow: "0 2px 12px 0 rgba(231,76,60,0.10)"
+              }}
+              onClick={() => setShowCancelModal(true)}
+              className="cancel-sub-hover"
+            >
+              Cancel Subscription
+            </button>
+          </div>
+        </main>
+        <div
           style={{
-            display: 'flex',
-            gap: 12,
-            marginBottom: 16,
-            flexWrap: 'nowrap',
-            alignItems: 'center',
-            justifyContent: 'center'
+            marginTop: 40,
+            background: "#000",
+            borderRadius: 24,
+            boxShadow: "0 8px 32px rgb(255, 255, 255)",
+            padding: 48,
+            maxWidth: 1000,
+            marginLeft: "auto",
+            marginRight: "auto",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center"
           }}
         >
-          <select
-            value={newSchedule.type}
-            onChange={e => {
-              setNewSchedule({ ...newSchedule, type: e.target.value });
-              setWorkoutTypeDraft([]);
-            }}
+          <h3 style={{ color: '#ebeb4b', fontSize: 28, marginBottom: 16, textAlign: "center" }}>My Schedule</h3>
+          <form
+            onSubmit={handleAddSchedule}
             style={{
-              fontSize: 18,
-              padding: 8,
-              borderRadius: 6,
-              textAlign: "center",
-              width: 200,
-              minWidth: 200,
-              maxWidth: 200,
-              height: 48,
-              flex: "0 0 200px"
+              display: 'flex',
+              gap: 12,
+              marginBottom: 16,
+              flexWrap: 'nowrap',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}
           >
-            {/* <option value="class">Class</option> */}
-            <option value="muscle_strength">Muscle strength</option>
-            <option value="weight_loose">Weight loose</option>
-          </select>
-          <div
-            ref={dropdownRef}
-            style={{
-              position: "relative",
-              width: 200,
-              minWidth: 200,
-              maxWidth: 200,
-              height: 48,
-              fontSize: 18,
-              borderRadius: 6,
-              background: "#fff",
-              border: "1px solid #ccc",
-              cursor: "pointer",
-              textAlign: "center",
-              padding: 0,
-              flex: "0 0 200px"
-            }}
-            tabIndex={0}
-          >
-            <div
-              style={{
-                padding: "8px",
-                minHeight: 32,
-                // height: 32,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#232526",
-                background: "#fff",
-                borderRadius: 6,
-                height: "100%"
+            <select
+              value={newSchedule.type}
+              onChange={e => {
+                setNewSchedule({ ...newSchedule, type: e.target.value });
+                setWorkoutTypeDraft([]);
               }}
-              onClick={() => setDropdownOpen(v => !v)}
+              style={{
+                fontSize: 18,
+                padding: 8,
+                borderRadius: 6,
+                textAlign: "center",
+                width: 200,
+                minWidth: 200,
+                maxWidth: 200,
+                height: 48,
+                flex: "0 0 200px"
+              }}
             >
-              Workout Type
-              <span style={{ marginLeft: 8, fontSize: 16, color: "#888" }}>▼</span>
-            </div>
-            {dropdownOpen && (
-              <div style={{
-                position: "absolute",
-                top: "100%",
-                left: 0,
-                right: 0,
+              {/* <option value="class">Class</option> */}
+              <option value="muscle_strength">Muscle strength</option>
+              <option value="weight_loose">Weight loose</option>
+            </select>
+            <div
+              ref={dropdownRef}
+              style={{
+                position: "relative",
+                width: 200,
+                minWidth: 200,
+                maxWidth: 200,
+                height: 48,
+                fontSize: 18,
+                borderRadius: 6,
                 background: "#fff",
                 border: "1px solid #ccc",
-                borderRadius: 6,
-                zIndex: 10,
-                maxHeight: 220,
-                overflowY: "auto",
-                boxShadow: "0 4px 16px rgba(0,0,0,0.12)"
-              }}>
-                {workoutOptions.map(opt => (
-                  <label
-                    key={opt}
-                    style={{
-                      display: "block",
-                      padding: "8px 16px",
-                      cursor: "pointer",
-                      fontSize: 17,
-                      color: "#232526",
-                      textAlign: "left",
-                      userSelect: "none"
-                    }}
-                    onClick={e => e.stopPropagation()}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={workoutTypeDraft.includes(opt)}
-                      onChange={e => {
-                        setWorkoutTypeDraft(draft =>
-                          draft.includes(opt)
-                            ? draft.filter(o => o !== opt)
-                            : [...draft, opt]
-                        );
-                      }}
-                      style={{ marginRight: 8 }}
-                    />
-                    {opt}
-                  </label>
-                ))}
+                cursor: "pointer",
+                textAlign: "center",
+                padding: 0,
+                flex: "0 0 200px"
+              }}
+              tabIndex={0}
+            >
+              <div
+                style={{
+                  padding: "8px",
+                  minHeight: 32,
+                  // height: 32,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#232526",
+                  background: "#fff",
+                  borderRadius: 6,
+                  height: "100%"
+                }}
+                onClick={() => setDropdownOpen(v => !v)}
+              >
+                Workout Type
+                <span style={{ marginLeft: 8, fontSize: 16, color: "#888" }}>▼</span>
               </div>
-            )}
-          </div>
-          <input
-            type="text"
-            value={newSchedule.diet}
-            onChange={e => setNewSchedule({ ...newSchedule, diet: e.target.value })}
-            placeholder="Other"
-            style={{
-              fontSize: 18,
-              padding: 8,
-              borderRadius: 6,
-              textAlign: "center",
-              width: 200,
-              minWidth: 200,
-              maxWidth: 200,
-              height: 48,
-              flex: "0 0 200px"
-            }}
-          />
-          <input
-            type="datetime-local"
-            value={newSchedule.scheduledAt}
-            onChange={e => setNewSchedule({ ...newSchedule, scheduledAt: e.target.value })}
-            required
-            style={{
-              fontSize: 18,
-              padding: 8,
-              borderRadius: 6,
-              textAlign: "center",
-              width: 200,
-              minWidth: 200,
-              maxWidth: 200,
-              height: 48,
-              flex: "0 0 200px"
-            }}
-          />
-          <button
-            type="submit"
-            style={{
-              background: '#27ae60', // green color
-              color: '#fff',
-              border: 'none',
-              borderRadius: 8,
-              padding: '10px 16px',
-              fontSize: 18,
-              fontWeight: 600,
-              cursor: 'pointer',
-              width: 90,
-              minWidth: 90,
-              maxWidth: 90,
-              height: 48,
-              flex: "0 0 90px"
-            }}
-          >
-            Add
-          </button>
-        </form>
-        <div style={{ overflowX: 'auto', borderRadius: 14, boxShadow: '0 4px 24px rgba(235,235,75,0.08)', width: "100%" }}>
-          <table style={{ width: '100%', color: '#fff', borderCollapse: 'separate', borderSpacing: 0, background: '#232526', borderRadius: 14, overflow: 'hidden', boxShadow: '0 2px 16px rgba(0,0,0,0.15)' }}>
-            <thead>
-              <tr style={{ background: 'linear-gradient(90deg, #ebeb4b 0%, #f7d358 100%)', color: '#232526' }}>
-                <th style={{ padding: 14, fontSize: 20, fontWeight: 700, borderTopLeftRadius: 14, borderRight: '2px solid #fff', textAlign: "center", minWidth: 70, width: 90 }}>Type</th>
-                <th style={{ padding: 14, fontSize: 20, fontWeight: 700, borderRight: '2px solid #fff', textAlign: "center", minWidth: 260, width: 320 }}>Workout Type</th>
-                <th style={{ padding: 14, fontSize: 20, fontWeight: 700, borderRight: '2px solid #fff', textAlign: "center", minWidth: 220, width: 280 }}>Diet</th>
-                <th style={{ padding: 14, fontSize: 20, fontWeight: 700, borderRight: '2px solid #fff', textAlign: "center", minWidth: 90, width: 120 }}>Date</th>
-                <th style={{ padding: 14, fontSize: 20, fontWeight: 700, borderTopRightRadius: 14, textAlign: "center", minWidth: 80, width: 100 }}>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {schedules.map((s, idx) => (
-                <tr key={s.id} style={{ background: idx % 2 === 0 ? '#181818' : '#232526', transition: 'background 0.2s', borderBottom: '1px solid #333', cursor: 'pointer' }}
-                  onMouseOver={e => (e.currentTarget.style.background = '#2d2d2d')}
-                  onMouseOut={e => (e.currentTarget.style.background = idx % 2 === 0 ? '#181818' : '#232526')}
-                >
-                  <td style={{ padding: 12, fontSize: 18, borderRight: '2px solid #fff', borderBottomLeftRadius: idx === schedules.length - 1 ? 14 : 0, textAlign: "center", minWidth: 70, width: 90 }}>{s.type}</td>
-                  <td style={{ padding: 12, fontSize: 18, borderRight: '2px solid #fff', textAlign: "center", minWidth: 260, width: 320 }}>
-                    {Array.isArray(s.workoutType) ? s.workoutType.join(", ") : s.workoutType}
-                  </td>
-                  <td style={{ padding: 12, fontSize: 18, borderRight: '2px solid #fff', textAlign: "center", minWidth: 220, width: 280 }}>{s.diet}</td>
-                  <td style={{ padding: 12, fontSize: 18, borderRight: '2px solid #fff', textAlign: "center", minWidth: 90, width: 120 }}>
-                    {s.scheduledAt
-                      ? (() => {
-                          const d = new Date(s.scheduledAt);
-                          return (
-                            <>
-                              <div>{d.toLocaleDateString()}</div>
-                              <div>{d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                            </>
+              {dropdownOpen && (
+                <div style={{
+                  position: "absolute",
+                  top: "100%",
+                  left: 0,
+                  right: 0,
+                  background: "#fff",
+                  border: "1px solid #ccc",
+                  borderRadius: 6,
+                  zIndex: 10,
+                  maxHeight: 220,
+                  overflowY: "auto",
+                  boxShadow: "0 4px 16px rgba(0,0,0,0.12)"
+                }}>
+                  {workoutOptions.map(opt => (
+                    <label
+                      key={opt}
+                      style={{
+                        display: "block",
+                        padding: "8px 16px",
+                        cursor: "pointer",
+                        fontSize: 17,
+                        color: "#232526",
+                        textAlign: "left",
+                        userSelect: "none"
+                      }}
+                      onClick={e => e.stopPropagation()}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={workoutTypeDraft.includes(opt)}
+                        onChange={e => {
+                          setWorkoutTypeDraft(draft =>
+                            draft.includes(opt)
+                              ? draft.filter(o => o !== opt)
+                              : [...draft, opt]
                           );
-                        })()
-                      : ''}
-                  </td>
-                  <td style={{ padding: 12, fontSize: 18, borderBottomRightRadius: idx === schedules.length - 1 ? 14 : 0, textAlign: "center", minWidth: 80, width: 100 }}>
-                    <button onClick={() => handleDeleteSchedule(s.id)} style={{ background: 'linear-gradient(90deg, #e74c3c 0%, #ff7675 100%)', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 20px', cursor: 'pointer', fontWeight: 600, fontSize: 16, boxShadow: '0 2px 8px rgba(231,76,60,0.12)', transition: 'background 0.2s, transform 0.2s' }}>Delete</button>
-                  </td>
+                        }}
+                        style={{ marginRight: 8 }}
+                      />
+                      {opt}
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+            <input
+              type="text"
+              value={newSchedule.diet}
+              onChange={e => setNewSchedule({ ...newSchedule, diet: e.target.value })}
+              placeholder="Other"
+              style={{
+                fontSize: 18,
+                padding: 8,
+                borderRadius: 6,
+                textAlign: "center",
+                width: 200,
+                minWidth: 200,
+                maxWidth: 200,
+                height: 48,
+                flex: "0 0 200px"
+              }}
+            />
+            <input
+              type="datetime-local"
+              value={newSchedule.scheduledAt}
+              onChange={e => setNewSchedule({ ...newSchedule, scheduledAt: e.target.value })}
+              required
+              style={{
+                fontSize: 18,
+                padding: 8,
+                borderRadius: 6,
+                textAlign: "center",
+                width: 200,
+                minWidth: 200,
+                maxWidth: 200,
+                height: 48,
+                flex: "0 0 200px"
+              }}
+            />
+            <button
+              type="submit"
+              style={{
+                background: '#27ae60', // green color
+                color: '#fff',
+                border: 'none',
+                borderRadius: 8,
+                padding: '10px 16px',
+                fontSize: 18,
+                fontWeight: 600,
+                cursor: 'pointer',
+                width: 90,
+                minWidth: 90,
+                maxWidth: 90,
+                height: 48,
+                flex: "0 0 90px"
+              }}
+            >
+              Add
+            </button>
+          </form>
+          <div style={{ overflowX: 'auto', borderRadius: 14, boxShadow: '0 4px 24px rgba(235,235,75,0.08)', width: "100%" }}>
+            <table style={{ width: '100%', color: '#fff', borderCollapse: 'separate', borderSpacing: 0, background: '#232526', borderRadius: 14, overflow: 'hidden', boxShadow: '0 2px 16px rgba(0,0,0,0.15)' }}>
+              <thead>
+                <tr style={{ background: 'linear-gradient(90deg, #ebeb4b 0%, #f7d358 100%)', color: '#232526' }}>
+                  <th style={{ padding: 14, fontSize: 20, fontWeight: 700, borderTopLeftRadius: 14, borderRight: '2px solid #fff', textAlign: "center", minWidth: 70, width: 90 }}>Type</th>
+                  <th style={{ padding: 14, fontSize: 20, fontWeight: 700, borderRight: '2px solid #fff', textAlign: "center", minWidth: 260, width: 320 }}>Workout Type</th>
+                  <th style={{ padding: 14, fontSize: 20, fontWeight: 700, borderRight: '2px solid #fff', textAlign: "center", minWidth: 220, width: 280 }}>Diet</th>
+                  <th style={{ padding: 14, fontSize: 20, fontWeight: 700, borderRight: '2px solid #fff', textAlign: "center", minWidth: 90, width: 120 }}>Date</th>
+                  <th style={{ padding: 14, fontSize: 20, fontWeight: 700, borderTopRightRadius: 14, textAlign: "center", minWidth: 80, width: 100 }}>Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {schedules.map((s, idx) => (
+                  <tr key={s.id} style={{ background: idx % 2 === 0 ? '#181818' : '#232526', transition: 'background 0.2s', borderBottom: '1px solid #333', cursor: 'pointer' }}
+                    onMouseOver={e => (e.currentTarget.style.background = '#2d2d2d')}
+                    onMouseOut={e => (e.currentTarget.style.background = idx % 2 === 0 ? '#181818' : '#232526')}
+                  >
+                    <td style={{ padding: 12, fontSize: 18, borderRight: '2px solid #fff', borderBottomLeftRadius: idx === schedules.length - 1 ? 14 : 0, textAlign: "center", minWidth: 70, width: 90 }}>{s.type}</td>
+                    <td style={{ padding: 12, fontSize: 18, borderRight: '2px solid #fff', textAlign: "center", minWidth: 260, width: 320 }}>
+                      {Array.isArray(s.workoutType) ? s.workoutType.join(", ") : s.workoutType}
+                    </td>
+                    <td style={{ padding: 12, fontSize: 18, borderRight: '2px solid #fff', textAlign: "center", minWidth: 220, width: 280 }}>{s.diet}</td>
+                    <td style={{ padding: 12, fontSize: 18, borderRight: '2px solid #fff', textAlign: "center", minWidth: 90, width: 120 }}>
+                      {s.scheduledAt
+                        ? (() => {
+                            const d = new Date(s.scheduledAt);
+                            return (
+                              <>
+                                <div>{d.toLocaleDateString()}</div>
+                                <div>{d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                              </>
+                            );
+                          })()
+                        : ''}
+                    </td>
+                    <td style={{ padding: 12, fontSize: 18, borderBottomRightRadius: idx === schedules.length - 1 ? 14 : 0, textAlign: "center", minWidth: 80, width: 100 }}>
+                      <button onClick={() => handleDeleteSchedule(s.id)} style={{ background: 'linear-gradient(90deg, #e74c3c 0%, #ff7675 100%)', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 20px', cursor: 'pointer', fontWeight: 600, fontSize: 16, boxShadow: '0 2px 8px rgba(231,76,60,0.12)', transition: 'background 0.2s, transform 0.2s' }}>Delete</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
       {showCancelModal && (
@@ -760,7 +929,127 @@ useEffect(() => {
           </div>
         </div>
       )}
-      <style>{`
+      {/* Image Preview Dialog with Cropping */}
+      {showPreview && previewPic && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            background: '#111',
+            padding: 32,
+            borderRadius: 16,
+            maxWidth: 800,
+            width: '100%',
+            textAlign: 'center'
+          }}>
+            <h3 style={{ color: '#ebeb4b', marginBottom: 24 }}>Crop Profile Picture</h3>
+            <div style={{
+              display: 'flex',
+              gap: 32,
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexWrap: 'wrap'
+            }}>
+              <div style={{
+                maxWidth: '400px',
+                maxHeight: '400px',
+                margin: '0 auto',
+                overflow: 'hidden',
+                position: 'relative',
+                border: '2px solid #ebeb4b',
+                borderRadius: '8px',
+                padding: '8px',
+                background: '#222'
+              }}>
+                <ReactCrop
+                  crop={crop}
+                  onChange={c => setCrop(c)}
+                  aspect={1}
+                  circularCrop
+                  style={{
+                    '--ReactCrop-border': '2px solid #ebeb4b',
+                    '--ReactCrop-handle-size': '20px',
+                    '--ReactCrop-handle-color': '#ebeb4b',
+                    '--ReactCrop-handle-border': '2px solid #000',
+                    '--ReactCrop-handle-shadow': '0 0 8px rgba(0,0,0,0.5)',
+                  } as any}
+                >
+                  <img
+                    ref={imageRef}
+                    src={previewPic}
+                    alt="Preview"
+                    style={{
+                      maxWidth: '100%',
+                      maxHeight: '400px',
+                      objectFit: 'contain'
+                    }}
+                  />
+                </ReactCrop>
+              </div>
+            </div>
+            
+            <div style={{ 
+              marginTop: 24,
+              color: '#ebeb4b',
+              fontSize: '16px',
+              textAlign: 'center',
+              maxWidth: '400px',
+              margin: '24px auto 0'
+            }}>
+              Drag and resize the circle to select the portion of the image you want to use as your profile picture
+            </div>
+
+            <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginTop: 24 }}>
+              <button
+                onClick={handleSaveProfilePic}
+                style={{
+                  background: '#ebeb4b',
+                  color: '#000',
+                  border: 'none',
+                  padding: '12px 32px',
+                  borderRadius: 8,
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  transition: 'transform 0.2s, background 0.2s',
+                  fontSize: '16px'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.background = '#ffe066'}
+                onMouseOut={(e) => e.currentTarget.style.background = '#ebeb4b'}
+              >
+                Save Profile Picture
+              </button>
+              <button
+                onClick={handleCancelPreview}
+                style={{
+                  background: '#333',
+                  color: '#fff',
+                  border: '1px solid #666',
+                  padding: '12px 32px',
+                  borderRadius: 8,
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  transition: 'transform 0.2s, background 0.2s',
+                  fontSize: '16px'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.background = '#444'}
+                onMouseOut={(e) => e.currentTarget.style.background = '#333'}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      <style jsx>{`
         .nav-hover:hover {
           color: #fff !important;
           text-decoration: underline;
@@ -801,6 +1090,6 @@ useEffect(() => {
           transform: scale(1.05);
         }
       `}</style>
-    </div>
+    </>
   )
 }

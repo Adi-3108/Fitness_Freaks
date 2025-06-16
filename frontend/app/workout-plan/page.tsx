@@ -4,11 +4,15 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import './workout-plan.css';
+import Dialog from "../../app/components/Dialog";
 
 const WorkoutPlan = () => {
   const router = useRouter();
   const [selectedPlan, setSelectedPlan] = useState('');
   const [email, setEmail] = useState('');
+  const [showDialog, setShowDialog] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState("");
+  const [dialogType, setDialogType] = useState<'success' | 'info'>('info');
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -93,9 +97,12 @@ const WorkoutPlan = () => {
     setSelectedPlan(planName);
   };
 
-  const handleSendWorkout = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!selectedPlan) {
-      alert('Please select a plan');
+      setDialogMessage('Please select a plan');
+      setDialogType('info');
+      setShowDialog(true);
       return;
     }
 
@@ -116,48 +123,61 @@ const WorkoutPlan = () => {
       const data = await response.json();
 
       if (response.ok) {
-        alert('Workout plan sent successfully!');
+        setDialogMessage('Workout plan sent successfully!');
+        setDialogType('success');
+        setShowDialog(true);
         setSelectedPlan('');
       } else {
-        alert(data.message || 'Failed to send workout plan. Please try again.');
+        setDialogMessage(data.message || 'Failed to send workout plan. Please try again.');
+        setDialogType('info');
+        setShowDialog(true);
       }
     } catch (error) {
-      console.error('Error sending workout plan:', error);
-      alert('An error occurred. Please try again.');
+      setDialogMessage('An error occurred. Please try again.');
+      setDialogType('info');
+      setShowDialog(true);
     }
   };
 
   return (
-    <section className="plans">
-      <h1 className="heading">Workout Plans</h1>
-      <div className="plans-content">
-        {workoutPlans.map((plan) => (
-          <div
-            key={plan.name}
-            className={`box ${selectedPlan === plan.name ? 'selected' : ''}`}
-            onClick={() => handlePlanSelect(plan.name)}
-          >
-            <img src={getImagePath(plan.name)} alt={`${plan.name} workout`} />
-            <h3>{plan.name}</h3>
-            <h2>Exercises:</h2>
-            <ul>
-              {plan.exercises.map((exercise, index) => (
-                <li key={index}>
-                  {exercise.name}: {exercise.sets} sets x {exercise.reps || exercise.duration}
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
-      {selectedPlan && (
-        <div className="email-section">
-          <button onClick={handleSendWorkout} className="btn">
-            Send Workout Plan
-          </button>
+    <>
+      <Dialog 
+        isOpen={showDialog}
+        message={dialogMessage}
+        onClose={() => setShowDialog(false)}
+        type={dialogType}
+      />
+      <section className="plans">
+        <h1 className="heading">Workout Plans</h1>
+        <div className="plans-content">
+          {workoutPlans.map((plan) => (
+            <div
+              key={plan.name}
+              className={`box ${selectedPlan === plan.name ? 'selected' : ''}`}
+              onClick={() => handlePlanSelect(plan.name)}
+            >
+              <img src={getImagePath(plan.name)} alt={`${plan.name} workout`} />
+              <h3>{plan.name}</h3>
+              <h2>Exercises:</h2>
+              <ul>
+                {plan.exercises.map((exercise, index) => (
+                  <li key={index}>
+                    {exercise.name}: {exercise.sets} sets x {exercise.reps || exercise.duration}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
-      )}
-    </section>
+        {selectedPlan && (
+          <div className="email-section">
+            <button onClick={handleSubmit} className="btn">
+              Send Workout Plan
+            </button>
+          </div>
+        )}
+      </section>
+    </>
   );
 };
 

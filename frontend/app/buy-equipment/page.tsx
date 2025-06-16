@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Equipment, OrderItem } from "../../types/equipment";
 import { fetchEquipment,placeOrder } from "../../services/api";
+import Dialog from "../../app/components/Dialog";
 
 const formatDate = (dateString: string) => {
   if (!dateString) return "";
@@ -52,6 +53,9 @@ export default function BuyEquipmentPage() {
   const [loading, setLoading] = useState(false);
   const [ordersVisible, setOrdersVisible] = useState(false);
   const [userOrders, setUserOrders] = useState<any[]>([]);
+  const [showDialog, setShowDialog] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState("");
+  const [dialogType, setDialogType] = useState<'success' | 'info'>('info');
 
   useEffect(() => {
     const user = localStorage.getItem("user");
@@ -62,7 +66,11 @@ export default function BuyEquipmentPage() {
     setLoading(true);
     fetchEquipment()
       .then(setEquipment)
-      .catch((err) => alert(err.message))
+      .catch((err) => {
+        setDialogMessage(err.message);
+        setDialogType('info');
+        setShowDialog(true);
+      })
       .finally(() => setLoading(false));
 
   }, [router]);
@@ -98,7 +106,9 @@ export default function BuyEquipmentPage() {
       setCartItems([]);
       setCartVisible(false);
     } catch (e: any) {
-      alert(e.message);
+      setDialogMessage(e.message);
+      setDialogType('info');
+      setShowDialog(true);
     } finally {
       setLoading(false);
 
@@ -125,193 +135,163 @@ export default function BuyEquipmentPage() {
       setUserOrders(data);
       setOrdersVisible(true);
     } catch (error: any) {
-      alert(error.message || "Failed to load your orders.");
-      console.error("Error fetching orders:", error);
+      setDialogMessage(error.message || "Failed to load your orders.");
+      setDialogType('info');
+      setShowDialog(true);
     }
   };
 
   return (
-    <div className="BUY" id="BUY">
-      <div id="header">
-        <Link href="/">
-          <Image
-            src="/logo.jpeg.jpg"
-            id="logoimage"
-            alt="Logo"
-            width={60}
-            height={60}
-          />
-        </Link>
-        <Link href="/" className="logo">
-          Fitness <span>Freaks</span>
-        </Link>
-        <h6 className="logo">
-          Buy <span>Equipments</span>
-        </h6>
+    <>
+      <Dialog 
+        isOpen={showDialog}
+        message={dialogMessage}
+        onClose={() => setShowDialog(false)}
+        type={dialogType}
+      />
+      <div className="BUY" id="BUY">
+        <div id="header">
+          <Link href="/">
+            <Image
+              src="/logo.jpeg.jpg"
+              id="logoimage"
+              alt="Logo"
+              width={60}
+              height={60}
+            />
+          </Link>
+          <Link href="/" className="logo">
+            Fitness <span>Freaks</span>
+          </Link>
+          <h6 className="logo">
+            Buy <span>Equipments</span>
+          </h6>
 
-        <button
-          id="cartlink"
-          onClick={() => setCartVisible(true)}
-          className="cartlink"
-        >
-          <img src="/cartimage.png" id="cartimage" alt="" />
-          <p style={{ display: "inline" }}>Cart (</p>
-          <p style={{ display: "inline" }} id="itemcount">
-            {cartItems.length}
-          </p>
-          <p style={{ display: "inline" }}>)</p>
-        </button>
+          <button
+            id="cartlink"
+            onClick={() => setCartVisible(true)}
+            className="cartlink"
+          >
+            <img src="/cartimage.png" id="cartimage" alt="" />
+            <p style={{ display: "inline" }}>Cart (</p>
+            <p style={{ display: "inline" }} id="itemcount">
+              {cartItems.length}
+            </p>
+            <p style={{ display: "inline" }}>)</p>
+          </button>
 
-        <button
-          className="yourorders"
-          onClick={fetchUserOrders}
-          id="yourorders"
-        >
-          <p style={{ display: "inline" }}>Your Orders</p>
-        </button>
-      </div>
+          <button
+            className="yourorders"
+            onClick={fetchUserOrders}
+            id="yourorders"
+          >
+            <p style={{ display: "inline" }}>Your Orders</p>
+          </button>
+        </div>
 
-      <div className="BUY-content">
-        {equipment.map((eq) => (
-          <div key={eq.id} className="row">
-            <Image src={eq.imageUrl} alt={eq.name} width={400} height={300} />
-            <h4>{eq.name}</h4>
-            <h4>₹{eq.price}</h4>
-            <button className="addtocart" onClick={() => addToCart(eq)}>
-              Add to Cart
-            </button>
-          </div>
-        ))}
-      </div>
-
-      {/* 🛒 CART SECTION */}
-      <div
-        id="cartsection"
-        className="cartsection"
-        style={{ display: cartVisible ? "block" : "none" }}
-      >
-        <button onClick={() => setCartVisible(false)} className="close">
-          Close
-        </button>
-        <h2>Your Cart</h2>
-        <ul id="list">
-          {cartItems.map((item, index) => (
-            <li key={index} style={{ fontSize: "18px" }}>
-              {item.name} ₹{item.price}
-              <button
-                onClick={() => removeFromCart(index)}
-                style={{
-                  marginLeft: "10px",
-                  fontSize: "14px",
-                  color: "var(--main-color)",
-                  backgroundColor: "transparent",
-                  border: "none",
-                  cursor: "pointer",
-                }}
-              >
-                Remove
+        <div className="BUY-content">
+          {equipment.map((eq) => (
+            <div key={eq.id} className="row">
+              <Image src={eq.imageUrl} alt={eq.name} width={400} height={300} />
+              <h4>{eq.name}</h4>
+              <h4>₹{eq.price}</h4>
+              <button className="addtocart" onClick={() => addToCart(eq)}>
+                Add to Cart
               </button>
-            </li>
+            </div>
           ))}
-        </ul>
-        <br />
-        <h3 id="totalprice">
-          {cartItems.length > 0
-            ? `Total Price - ₹${total}`
-            : "Your Cart Is Empty"}
-        </h3>
-        <br />
-        <button
-          id="placeorder"
-          style={{ display: cartItems.length > 0 ? "block" : "none" }}
-          onClick={handlePlaceOrder}
-          disabled={loading}
-        >
-          {loading ? "Processing..." : "Proceed to Payment"}
-        </button>
-      </div>
+        </div>
 
-      {/* 📦 ✨ YOUR ORDERS SECTION - styled like cart */}
-      {ordersVisible && (
-        <div className="cartsection" style={{ display: "block" }}>
-          <button onClick={() => setOrdersVisible(false)} className="close">
+        {/* 🛒 CART SECTION */}
+        <div
+          id="cartsection"
+          className="cartsection"
+          style={{ display: cartVisible ? "block" : "none" }}
+        >
+          <button onClick={() => setCartVisible(false)} className="close">
             Close
           </button>
-          <h2>Your Orders</h2>
-          {userOrders.length === 0 ? (
-            <p>No past orders found.</p>
-          ) : (
-            <ul style={{ listStyle: "none", paddingLeft: 0 }}>
-              {userOrders.map((order, index) => (
-                // <li key={order.id} style={{ marginBottom: "20px", fontSize: "18px" }}>
-                //   <strong>Order {index + 1} </strong>
-                //   <span style={{ color: "#666" }}>
-                //     ({formatDate(order.placedAt)})
-                //   </span>
-                //   <ul style={{ marginLeft: "15px", marginTop: "5px" }}>
-                //     {order.items.map((item: any, index: number) => (
-                //       <li key={index}>
-                //         {item.name} - ₹{item.price}
-                //       </li>
-                //     ))}
-                //   </ul>
-                // </li>
-                // <li
-                //   key={order.id}
-                //   style={{ marginBottom: "20px", fontSize: "18px" }}
-                // >
-                //   <strong>Order {index + 1} </strong>
-                //   <div style={{ color: "#666", marginTop: "5px" }}>
-                //     Ordered: {formatDate(order.placedAt)}
-                //   </div>
-                //   <div
-                //     style={{
-                //       color: "#4CAF50",
-                //       marginTop: "5px",
-                //       fontSize: "16px",
-                //     }}
-                //   >
-                //     Expected Delivery:{" "}
-                //     {calculateExpectedDelivery(order.placedAt)}
-                //   </div>
-                //   <ul style={{ marginLeft: "15px", marginTop: "10px" }}>
-                //     {order.items.map((item: any, index: number) => (
-                //       <li key={index}>
-                //         {item.name} - ₹{item.price}
-                //       </li>
-                //     ))}
-                //   </ul>
-                // </li>
-                <li
-                  key={order.id}
-                  style={{ marginBottom: "20px", fontSize: "18px" }}
+          <h2>Your Cart</h2>
+          <ul id="list">
+            {cartItems.map((item, index) => (
+              <li key={index} style={{ fontSize: "18px" }}>
+                {item.name} ₹{item.price}
+                <button
+                  onClick={() => removeFromCart(index)}
+                  style={{
+                    marginLeft: "10px",
+                    fontSize: "14px",
+                    color: "var(--main-color)",
+                    backgroundColor: "transparent",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
                 >
-                  <strong>Order {index + 1} </strong>
-                  <div style={{ color: "#666", marginTop: "5px" }}>
-                    Ordered: {formatDate(order.placedAt)}
-                  </div>
-                  <div
-                    style={{
-                      color: "#4CAF50",
-                      marginTop: "5px",
-                      fontSize: "16px",
-                    }}
-                  >
-                    {getDeliveryStatus(order.placedAt)}
-                  </div>
-                  <ul style={{ marginLeft: "15px", marginTop: "10px" }}>
-                    {order.items.map((item: any, index: number) => (
-                      <li key={index}>
-                        {item.name} - ₹{item.price}
-                      </li>
-                    ))}
-                  </ul>
-                </li>
-              ))}
-            </ul>
-          )}
+                  Remove
+                </button>
+              </li>
+            ))}
+          </ul>
+          <br />
+          <h3 id="totalprice">
+            {cartItems.length > 0
+              ? `Total Price - ₹${total}`
+              : "Your Cart Is Empty"}
+          </h3>
+          <br />
+          <button
+            id="placeorder"
+            style={{ display: cartItems.length > 0 ? "block" : "none" }}
+            onClick={handlePlaceOrder}
+            disabled={loading}
+          >
+            {loading ? "Processing..." : "Proceed to Payment"}
+          </button>
         </div>
-      )}
-    </div>
+
+        {/* 📦 ✨ YOUR ORDERS SECTION - styled like cart */}
+        {ordersVisible && (
+          <div className="cartsection" style={{ display: "block" }}>
+            <button onClick={() => setOrdersVisible(false)} className="close">
+              Close
+            </button>
+            <h2>Your Orders</h2>
+            {userOrders.length === 0 ? (
+              <p>No past orders found.</p>
+            ) : (
+              <ul style={{ listStyle: "none", paddingLeft: 0 }}>
+                {userOrders.map((order, index) => (
+                  <li
+                    key={order.id}
+                    style={{ marginBottom: "20px", fontSize: "18px" }}
+                  >
+                    <strong>Order {index + 1} </strong>
+                    <div style={{ color: "#666", marginTop: "5px" }}>
+                      Ordered: {formatDate(order.placedAt)}
+                    </div>
+                    <div
+                      style={{
+                        color: "#4CAF50",
+                        marginTop: "5px",
+                        fontSize: "16px",
+                      }}
+                    >
+                      {getDeliveryStatus(order.placedAt)}
+                    </div>
+                    <ul style={{ marginLeft: "15px", marginTop: "10px" }}>
+                      {order.items.map((item: any, index: number) => (
+                        <li key={index}>
+                          {item.name} - ₹{item.price}
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+      </div>
+    </>
   );
 }

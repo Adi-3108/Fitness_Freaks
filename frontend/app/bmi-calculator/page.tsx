@@ -1,19 +1,22 @@
 "use client"
 
 import { useState } from "react"
+import Dialog from "../../app/components/Dialog"
 
 export default function BMICalculator() {
   const [weight, setWeight] = useState("")
   const [height, setHeight] = useState("")
   const [result, setResult] = useState("")
+  const [showDialog, setShowDialog] = useState(false)
+  const [dialogMessage, setDialogMessage] = useState("")
 
   const calculateBMI = () => {
     const weightVal = parseFloat(weight)
     const heightCm = parseFloat(height)
 
     if (weightVal <= 0 || heightCm <= 0) {
-      alert("Please enter valid positive numbers for weight and height.")
-      setResult("") // Clear previous result on error
+      setDialogMessage("Please enter valid positive numbers for weight and height.")
+      setShowDialog(true)
       return
     }
 
@@ -45,48 +48,56 @@ export default function BMICalculator() {
   }
 
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        minHeight: "100vh",
-        background: "var(--bg-color)",
-        color: "var(--text-color)",
-      }}
-    >
-      <div className="bmi-container">
-        <h1>BMI Calculator</h1>
-        <p>Calculate your Body Mass Index (BMI) and see which category you fall into.</p>
+    <>
+      <Dialog 
+        isOpen={showDialog}
+        message={dialogMessage}
+        onClose={() => setShowDialog(false)}
+        type="info"
+      />
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+          background: "var(--bg-color)",
+          color: "var(--text-color)",
+        }}
+      >
+        <div className="bmi-container">
+          <h1>BMI Calculator</h1>
+          <p>Calculate your Body Mass Index (BMI) and see which category you fall into.</p>
 
-        <form id="bmiForm" onSubmit={(e) => e.preventDefault()}>
-          <label htmlFor="weight">Weight (kg):</label>
-          <input
-            type="number"
-            id="weight"
-            placeholder="Enter your weight"
-            value={weight}
-            onChange={(e) => setWeight(e.target.value)}
-            required
-          />
+          <form id="bmiForm" onSubmit={(e) => e.preventDefault()}>
+            <label htmlFor="weight">Weight (kg):</label>
+            <input
+              type="number"
+              id="weight"
+              placeholder="Enter your weight"
+              value={weight}
+              onChange={(e) => setWeight(e.target.value)}
+              required
+            />
 
-          <label htmlFor="height">Height (cm):</label>
-          <input
-            type="number"
-            id="height"
-            placeholder="Enter your height"
-            value={height}
-            onChange={(e) => setHeight(e.target.value)}
-            required
-          />
+            <label htmlFor="height">Height (cm):</label>
+            <input
+              type="number"
+              id="height"
+              placeholder="Enter your height"
+              value={height}
+              onChange={(e) => setHeight(e.target.value)}
+              required
+            />
 
-          <button type="button" onClick={calculateBMI}>
-            Calculate BMI
-          </button>
-        </form>
+            <button type="button" onClick={calculateBMI}>
+              Calculate BMI
+            </button>
+          </form>
 
-        <div id="bmiResult" className="bmi-result" dangerouslySetInnerHTML={{ __html: result }}></div>
+          <div id="bmiResult" className="bmi-result" dangerouslySetInnerHTML={{ __html: result }}></div>
+        </div>
       </div>
-    </div>
+    </>
   )
 }
