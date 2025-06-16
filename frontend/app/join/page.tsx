@@ -216,13 +216,6 @@ export default function Join() {
               </div>
 
               <button type="submit">Proceed to Payment</button>
-              
-              <div className="signin-link">
-                Already have an account?{" "}
-                <Link href="/login" >
-                  Sign in
-                </Link>
-              </div>
             </form>
           </div>
         </div>
