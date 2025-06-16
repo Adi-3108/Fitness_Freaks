@@ -93,8 +93,8 @@ export default function BuyEquipmentPage() {
         })),
       };
 
-      const order = await placeOrder(orderData);
-      alert(`Your Order is  placed!`);
+      // const order = await placeOrder(orderData);
+      // alert(`Your Order is  placed!`);
       setCartItems([]);
       setCartVisible(false);
     } catch (e: any) {
