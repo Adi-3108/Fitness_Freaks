@@ -10,21 +10,21 @@ export default function ReviewSection() {
       id: 1001,
       name: "Tushar",
       rating: 5,
-      message: "Amazing gym with top-notch equipment...",
+      message: "Amazing gym with top-notch equipment and professional trainers. The atmosphere is motivating and the facilities are well-maintained. Highly recommended for anyone serious about fitness!",
       imageUrl: "/1.jpg",
     },
     {
       id: 1002,
       name: "Manan",
       rating: 4,
-      message: "Great trainers and friendly environment!",
+      message: "Great trainers and friendly environment! The workout plans are personalized and effective. The community here is supportive and welcoming. A perfect place to achieve your fitness goals.",
       imageUrl: "/2.jpg",
     },
     {
       id: 1003,
       name: "Rahul",
       rating: 5,
-      message: "I achieved my fitness goals here! Highly recommended.",
+      message: "I achieved my fitness goals here! The trainers are knowledgeable and supportive. The equipment is modern and well-maintained. The atmosphere is motivating and the results are amazing.",
       imageUrl: "/3.jpg",
     },
   ];
@@ -169,21 +169,24 @@ export default function ReviewSection() {
           <div className="wrapper">
             {fixedReviews.map((review, index) => (
               <div className="review-item" key={`${review.id}-${index}`}>
-                <Image
-                  src={imageErrors.has(review.id) ? "/1.jpg" : getValidImageUrl(review.imageUrl)}
-                  alt={review.name}
-                  width={150}
-                  height={150}
-                  onError={() => handleImageError(review.id)}
-                  unoptimized={true}
-                />
+                <div className="review-image-container">
+                  <Image
+                    src={imageErrors.has(review.id) ? "/1.jpg" : getValidImageUrl(review.imageUrl)}
+                    alt={review.name}
+                    width={150}
+                    height={150}
+                    onError={() => handleImageError(review.id)}
+                    unoptimized={true}
+                    className="review-image"
+                  />
+                </div>
                 <h2>{review.name}</h2>
                 <div className="rating">
                   {[...Array(Number(review.rating))].map((_, i) => (
                     <i className="bx bx-star" id="star" key={`${review.id}-star-${i}`}></i>
                   ))}
                 </div>
-                <p>&quot;{review.message}&quot;</p>
+                <p className="review-message">&quot;{review.message}&quot;</p>
               </div>
             ))}
           </div>

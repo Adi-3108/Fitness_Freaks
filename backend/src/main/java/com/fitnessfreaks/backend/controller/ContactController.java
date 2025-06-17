@@ -143,7 +143,7 @@ public class ContactController {
                             <p>Thank You for Contacting Us</p>
                         </div>
                         <div class="content">
-                            <h2 style="color: #ebeb4b; margin-top: 0;">Hello <strong>%s</strong>! 👋</h2>
+                            <h2 style="color: #ebeb4b; margin-top: 0;">Hello %s! 👋</h2>
                             
                             <p>Thank you for reaching out to Fitness Freaks! We have received your message and our team will get back to you within 24 hours.</p>
                             
@@ -175,7 +175,11 @@ public class ContactController {
                     </div>
                 </body>
                 </html>
-                """.formatted(name, subject, message);
+                """.formatted(
+                    name.replace("<", "&lt;").replace(">", "&gt;"),
+                    subject.replace("<", "&lt;").replace(">", "&gt;"),
+                    message.replace("<", "&lt;").replace(">", "&gt;")
+                );
             
             emailService.sendHtmlEmail(email, 
                 "Thank You for Contacting Fitness Freaks - We'll Get Back to You Soon! 📧", 
@@ -184,9 +188,10 @@ public class ContactController {
             );
         } catch (Exception e) {
             System.err.println("Failed to send confirmation email: " + e.getMessage());
+            // Continue with admin notification even if user email fails
         }
 
-        // Send notification email to admin (you can change this email)
+        // Send notification email to admin
         try {
             String adminHtmlContent = """
                 <!DOCTYPE html>
@@ -348,7 +353,15 @@ public class ContactController {
                     </div>
                 </body>
                 </html>
-                """.formatted(name, email, subject, contactMessage.getCreatedAt(), message, email, subject);
+                """.formatted(
+                    name.replace("<", "&lt;").replace(">", "&gt;"),
+                    email.replace("<", "&lt;").replace(">", "&gt;"),
+                    subject.replace("<", "&lt;").replace(">", "&gt;"),
+                    contactMessage.getCreatedAt(),
+                    message.replace("<", "&lt;").replace(">", "&gt;"),
+                    email.replace("<", "&lt;").replace(">", "&gt;"),
+                    subject.replace("<", "&lt;").replace(">", "&gt;")
+                );
             
             emailService.sendHtmlEmail("axyz97836@gmail.com", 
                 "New Contact Message from " + name + " - Fitness Freaks", 
@@ -357,6 +370,7 @@ public class ContactController {
             );
         } catch (Exception e) {
             System.err.println("Failed to send admin notification: " + e.getMessage());
+            // Continue even if admin notification fails
         }
 
         return ResponseEntity.ok(Map.of("message", "Message sent successfully! We'll get back to you soon."));

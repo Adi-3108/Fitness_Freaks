@@ -441,97 +441,269 @@ span {
   html {
     font-size: 55%;
   }
+  
+  .services-content {
+    grid-template-columns: repeat(auto-fit, minmax(300px, auto));
+  }
+  
+  .plans-content {
+    grid-template-columns: repeat(auto-fit, minmax(300px, auto));
+  }
 }
 
 @media (max-width: 991px) {
   #menu-icon {
     display: block;
   }
+  
   .navbar {
     position: absolute;
     top: 100%;
-    right: -100%;
-    width: 255px;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
+    left: -100%;
+    width: 100%;
+    padding: 1rem 4%;
     background: var(--bg-color);
-    transition: all 0.5s ease;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.2);
+    display: none;
+    transition: 0.25s ease;
   }
+  
+  .navbar.active {
+    display: block;
+    left: 0;
+  }
+  
   .navbar a {
     display: block;
-    padding: 17px;
-    font-size: 22px;
+    margin: 1rem 0;
+    font-size: 2rem;
   }
-  .navbar.active {
-    right: 0;
+  
+  .dropdown-content {
+    position: static;
+    background: var(--bg-color);
+    width: 100%;
+    padding-left: 2rem;
   }
+  
+  .dropdown-content a {
+    padding: 1rem 0;
+  }
+  
   header {
-    padding: 2rem 3%;
+    padding: 2rem 4%;
   }
+  
   section {
-    padding: 10rem 3%;
+    padding: 10rem 4% 2rem;
   }
-  .services {
-    padding: 7rem;
-  }
-  .about-content h2 {
-    margin-top: 2rem;
-    text-align: center;
-    font-size: 5rem;
-  }
-  .review.wrapper {
-    grid-template-columns: repeat(1, 1fr);
-  }
-  .footer {
-    padding: 40px 0;
-  }
-}
-
-@media (max-width: 786px) {
-  .home {
-    flex-direction: column;
-  }
+  
   .home-content h3 {
+    font-size: 4rem;
+  }
+  
+  .home-content h1 {
     font-size: 4.5rem;
-    margin-top: 1.5rem;
   }
-  .home-content {
-    order: 2;
-  }
+  
   .home-img img {
-    width: 70vwq;
-    margin-top: 4rem;
+    width: 100%;
+    margin-top: 150px;
   }
+  
   .about {
     flex-direction: column;
   }
+  
   .about-img img {
-    width: 70vw;
-    margin-top: 4rem;
+    width: 100%;
+    margin-top: 2rem;
   }
-  .about-content h2 {
-    text-align: center;
-  }
-  .services h2 {
-    margin-bottom: 5rem;
+  
+  .services-content {
+    grid-template-columns: repeat(auto-fit, minmax(250px, auto));
   }
 }
 
-@media (max-width: 617px) {
-  .home-img img {
-    width: 80vw;
-    margin-top: 8rem;
-  }
-  .about-img img {
-    width: 70vw;
-    margin-top: 4rem;
-  }
-}
-
-@media (max-width: 450px) {
+@media (max-width: 768px) {
   html {
     font-size: 50%;
+  }
+  
+  .home {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .home-content {
+    order: 2;
+  }
+  
+  .home-img {
+    order: 1;
+    margin-top: 2rem;
+  }
+  
+  .home-img img {
+    width: 100%;
+    margin-top: 0;
+  }
+  
+  .about-content {
+    text-align: center;
+  }
+  
+  .services h2 {
+    font-size: 3rem;
+  }
+  
+  .plans-content {
+    grid-template-columns: 1fr;
+  }
+  
+  .review-box {
+    flex-direction: column;
+  }
+  
+  .review-item {
+    width: 100%;
+    margin: 1rem 0;
+  }
+  
+  .footer {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .footer .social {
+    margin: 2rem 0;
+  }
+  
+  .diet-content {
+    flex-direction: column;
+  }
+  
+  .diet-text, .diet-img {
+    width: 100%;
+  }
+  
+  .meals-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  html {
+    font-size: 45%;
+  }
+  
+  .home-content h3 {
+    font-size: 3rem;
+  }
+  
+  .home-content h1 {
+    font-size: 3.5rem;
+  }
+  
+  .home-content p {
+    font-size: 1.8rem;
+  }
+  
+  .heading {
+    font-size: 4rem;
+  }
+  
+  .about-content h2 {
+    font-size: 3rem;
+  }
+  
+  .services h2 {
+    font-size: 2.5rem;
+  }
+  
+  .review-form-container {
+    padding: 2rem;
+  }
+  
+  .form-row {
+    flex-direction: column;
+  }
+  
+  .form-group {
+    width: 100%;
+  }
+  
+  .submit-review-btn {
+    width: 100%;
+  }
+  
+  .average-rating-box {
+    padding: 1.5rem;
+  }
+  
+  .meal-box {
+    padding: 1.5rem;
+  }
+}
+
+/* Add responsive styles for cart and checkout */
+@media (max-width: 768px) {
+  .cartsection {
+    width: 100%;
+    right: 0;
+  }
+  
+  .cart-item {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .cart-item img {
+    margin: 0 auto 1rem;
+  }
+  
+  .cart-item-details {
+    width: 100%;
+  }
+  
+  .cart-item-price {
+    margin: 1rem 0;
+  }
+  
+  .cart-item-quantity {
+    justify-content: center;
+  }
+  
+  #placeorder {
+    width: 100%;
+  }
+}
+
+/* Add responsive styles for login/signup forms */
+@media (max-width: 768px) {
+  .loginL1 {
+    padding: 2rem;
+  }
+  
+  .L2 {
+    padding: 2rem;
+  }
+  
+  .input-field {
+    width: 100%;
+  }
+  
+  .options {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .options label {
+    margin-bottom: 1rem;
+  }
+  
+  .login-btn {
+    width: 100%;
   }
 }
 
@@ -1664,6 +1836,382 @@ body.dark-mode {
   }
   .meal-calories {
     font-size: 1rem;
+  }
+}
+
+/* Header responsive styles */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+@media (max-width: 991px) {
+  header {
+    padding: 1rem 4%;
+  }
+  
+  .header-left {
+    gap: 0.5rem;
+  }
+  
+  .logo {
+    font-size: 2.4rem;
+  }
+  
+  header img {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .top-btn {
+    margin-left: auto;
+  }
+  
+  .navbar {
+    position: fixed;
+    top: 80px;
+    left: -100%;
+    width: 100%;
+    height: calc(100vh - 80px);
+    background: var(--bg-color);
+    padding: 2rem 4%;
+    transition: 0.3s ease;
+    overflow-y: auto;
+  }
+  
+  .navbar.active {
+    left: 0;
+  }
+  
+  .navbar li {
+    margin: 1.5rem 0;
+  }
+  
+  .navbar a {
+    font-size: 1.8rem;
+    display: block;
+    margin: 0;
+  }
+  
+  .dropdown-content {
+    position: static;
+    background: transparent;
+    padding-left: 2rem;
+    margin-top: 1rem;
+  }
+  
+  .dropdown-content a {
+    padding: 0.8rem 0;
+    font-size: 1.6rem;
+  }
+  
+  .user-avatar-btn img {
+    width: 35px;
+    height: 35px;
+  }
+}
+
+@media (max-width: 480px) {
+  header {
+    padding: 1rem 2%;
+  }
+  
+  .header-left {
+    gap: 0.3rem;
+  }
+  
+  .logo {
+    font-size: 2rem;
+  }
+  
+  header img {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .navbar {
+    top: 70px;
+    height: calc(100vh - 70px);
+    padding: 1.5rem 2%;
+  }
+  
+  .navbar li {
+    margin: 1rem 0;
+  }
+  
+  .navbar a {
+    font-size: 1.6rem;
+  }
+  
+  .dropdown-content a {
+    font-size: 1.4rem;
+  }
+  
+  .user-avatar-btn img {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .nav-btn {
+    padding: 0.8rem 1.6rem;
+    font-size: 1.4rem;
+  }
+}
+
+/* User Profile Responsive Styles */
+.user-profile-container {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 2rem;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.profile-sidebar {
+  background: var(--bg-color);
+  padding: 2rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(238, 238, 238, 0.1);
+}
+
+.profile-main {
+  background: var(--bg-color);
+  padding: 2rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(238, 238, 238, 0.1);
+}
+
+.profile-pic-container {
+  width: 200px;
+  height: 200px;
+  margin: 0 auto 2rem;
+  position: relative;
+}
+
+.profile-pic-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid var(--main-color);
+}
+
+.profile-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.schedule-form {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.schedule-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.schedule-card {
+  background: var(--bg-color);
+  padding: 1.5rem;
+  border-radius: 0.8rem;
+  border: 1px solid rgba(238, 238, 238, 0.1);
+}
+
+/* Review Section Responsive Styles */
+.review-box {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.wrapper {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin: 3rem 0;
+}
+
+.review-item {
+  background: var(--bg-color);
+  padding: 2rem;
+  border-radius: 1rem;
+  text-align: center;
+  transition: transform 0.3s ease;
+  border: 1px solid rgba(238, 238, 238, 0.1);
+}
+
+.review-item img {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  margin-bottom: 1.5rem;
+  object-fit: cover;
+}
+
+.review-item h2 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.review-item p {
+  font-size: 1.6rem;
+  line-height: 1.6;
+  color: var(--text-color);
+  margin-top: 1rem;
+}
+
+.rating {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.rating i {
+  color: var(--main-color);
+  font-size: 2rem;
+}
+
+/* Responsive Media Queries */
+@media (max-width: 991px) {
+  .user-profile-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .profile-sidebar {
+    order: 2;
+  }
+  
+  .profile-main {
+    order: 1;
+  }
+  
+  .profile-pic-container {
+    width: 150px;
+    height: 150px;
+  }
+  
+  .schedule-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+  
+  .wrapper {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .user-profile-container {
+    padding: 1rem;
+  }
+  
+  .profile-sidebar,
+  .profile-main {
+    padding: 1.5rem;
+  }
+  
+  .schedule-form {
+    gap: 1rem;
+  }
+  
+  .schedule-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .review-box {
+    padding: 1rem;
+  }
+  
+  .wrapper {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .review-item {
+    padding: 1.5rem;
+  }
+  
+  .review-item img {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .review-item h2 {
+    font-size: 1.8rem;
+  }
+  
+  .review-item p {
+    font-size: 1.4rem;
+  }
+  
+  .rating i {
+    font-size: 1.8rem;
+  }
+  
+  .review-form-container {
+    padding: 1.5rem;
+  }
+  
+  .form-row {
+    flex-direction: column;
+  }
+  
+  .form-group {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-pic-container {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .profile-actions {
+    gap: 0.8rem;
+  }
+  
+  .schedule-card {
+    padding: 1rem;
+  }
+  
+  .review-item {
+    padding: 1rem;
+  }
+  
+  .review-item img {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .review-item h2 {
+    font-size: 1.6rem;
+  }
+  
+  .review-item p {
+    font-size: 1.3rem;
+  }
+  
+  .rating i {
+    font-size: 1.6rem;
+  }
+  
+  .review-form-container {
+    padding: 1rem;
+  }
+  
+  .review-form-title {
+    font-size: 1.8rem;
+  }
+  
+  .review-form-subtitle {
+    font-size: 1.4rem;
   }
 }
 

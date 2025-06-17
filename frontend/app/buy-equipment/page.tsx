@@ -7,6 +7,7 @@ import Image from "next/image";
 import { Equipment, OrderItem } from "../../types/equipment";
 import { fetchEquipment,placeOrder } from "../../services/api";
 import Dialog from "../../app/components/Dialog";
+import EquipmentCardSkeleton from "../../components/EquipmentCardSkeleton";
 
 const formatDate = (dateString: string) => {
   if (!dateString) return "";
@@ -190,16 +191,25 @@ export default function BuyEquipmentPage() {
         </div>
 
         <div className="BUY-content">
-          {equipment.map((eq) => (
-            <div key={eq.id} className="row">
-              <Image src={eq.imageUrl} alt={eq.name} width={400} height={300} />
-              <h4>{eq.name}</h4>
-              <h4>₹{eq.price}</h4>
-              <button className="addtocart" onClick={() => addToCart(eq)}>
-                Add to Cart
-              </button>
-            </div>
-          ))}
+          {loading ? (
+            // Show skeleton loading state
+            Array(6).fill(0).map((_, index) => (
+              <div key={index} className="row">
+                <EquipmentCardSkeleton />
+              </div>
+            ))
+          ) : (
+            equipment.map((eq) => (
+              <div key={eq.id} className="row">
+                <Image src={eq.imageUrl} alt={eq.name} width={400} height={300} />
+                <h4>{eq.name}</h4>
+                <h4>₹{eq.price}</h4>
+                <button className="addtocart" onClick={() => addToCart(eq)}>
+                  Add to Cart
+                </button>
+              </div>
+            ))
+          )}
         </div>
 
         {/* 🛒 CART SECTION */}

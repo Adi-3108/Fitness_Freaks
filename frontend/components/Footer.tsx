@@ -10,6 +10,12 @@ export default function Footer() {
     message: ''
   })
   const [contactStatus, setContactStatus] = useState('')
+  const [formErrors, setFormErrors] = useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: ''
+  })
 
   const trackFooterAction = async (action: string, target: string) => {
     try {
@@ -29,8 +35,64 @@ export default function Footer() {
     }
   }
 
+  const validateForm = () => {
+    const errors = {
+      name: '',
+      email: '',
+      subject: '',
+      message: ''
+    }
+    let isValid = true
+
+    // Name validation
+    if (!contactForm.name.trim()) {
+      errors.name = 'Name is required'
+      isValid = false
+    } else if (contactForm.name.length < 2) {
+      errors.name = 'Name must be at least 2 characters'
+      isValid = false
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!contactForm.email.trim()) {
+      errors.email = 'Email is required'
+      isValid = false
+    } else if (!emailRegex.test(contactForm.email)) {
+      errors.email = 'Please enter a valid email address'
+      isValid = false
+    }
+
+    // Subject validation
+    if (!contactForm.subject.trim()) {
+      errors.subject = 'Subject is required'
+      isValid = false
+    } else if (contactForm.subject.length < 5) {
+      errors.subject = 'Subject must be at least 5 characters'
+      isValid = false
+    }
+
+    // Message validation
+    if (!contactForm.message.trim()) {
+      errors.message = 'Message is required'
+      isValid = false
+    } else if (contactForm.message.length < 10) {
+      errors.message = 'Message must be at least 10 characters'
+      isValid = false
+    }
+
+    setFormErrors(errors)
+    return isValid
+  }
+
   const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!validateForm()) {
+      setContactStatus('Please fix the errors in the form')
+      return
+    }
+
     setContactStatus('Sending...')
     
     try {
@@ -45,6 +107,7 @@ export default function Footer() {
       if (response.ok) {
         setContactStatus('Message sent successfully!')
         setContactForm({ name: '', email: '', subject: '', message: '' })
+        setFormErrors({ name: '', email: '', subject: '', message: '' })
         setShowContactForm(false)
         trackFooterAction('contact_form', 'contact')
       } else {
@@ -52,7 +115,15 @@ export default function Footer() {
       }
     } catch (error) {
       setContactStatus('Error sending message. Please try again.')
+      console.error('Contact form submission error:', error)
     }
+  }
+
+  const handleFormClose = () => {
+    setShowContactForm(false)
+    setContactForm({ name: '', email: '', subject: '', message: '' })
+    setFormErrors({ name: '', email: '', subject: '', message: '' })
+    setContactStatus('')
   }
 
   const handleSocialClick = (platform: string) => {
@@ -65,9 +136,9 @@ export default function Footer() {
         {/* Contact Form */}
         <div className="contact-section">
           <h3>Get in Touch</h3>
-          <p>Have questions? We'd love to hear from you!</p>
+          <p style={{fontSize:18 }}>Have questions? We'd love to hear from you!</p>
           <button 
-            onClick={() => setShowContactForm(!showContactForm)}
+            onClick={() => showContactForm ? handleFormClose() : setShowContactForm(true)}
             className="contact-toggle-btn"
           >
             {showContactForm ? 'Hide Contact Form' : 'Contact Us'}
@@ -76,36 +147,62 @@ export default function Footer() {
           {showContactForm && (
             <form onSubmit={handleContactSubmit} className="contact-form">
               <div className="form-row">
+                <div className="form-group">
+                  <input
+                    type="text"
+                    placeholder="Your Name"
+                    value={contactForm.name}
+                    onChange={(e) => {
+                      setContactForm({...contactForm, name: e.target.value})
+                      setFormErrors({...formErrors, name: ''})
+                    }}
+                    className={formErrors.name ? 'error' : ''}
+                  />
+                  {formErrors.name && <span className="error-message">{formErrors.name}</span>}
+                </div>
+                <div className="form-group">
+                  <input
+                    type="email"
+                    placeholder="Your Email"
+                    value={contactForm.email}
+                    onChange={(e) => {
+                      setContactForm({...contactForm, email: e.target.value})
+                      setFormErrors({...formErrors, email: ''})
+                    }}
+                    className={formErrors.email ? 'error' : ''}
+                  />
+                  {formErrors.email && <span className="error-message">{formErrors.email}</span>}
+                </div>
+              </div>
+              <div className="form-group">
                 <input
                   type="text"
-                  placeholder="Your Name"
-                  value={contactForm.name}
-                  onChange={(e) => setContactForm({...contactForm, name: e.target.value})}
-                  required
+                  placeholder="Subject"
+                  value={contactForm.subject}
+                  onChange={(e) => {
+                    setContactForm({...contactForm, subject: e.target.value})
+                    setFormErrors({...formErrors, subject: ''})
+                  }}
+                  className={formErrors.subject ? 'error' : ''}
                 />
-                <input
-                  type="email"
-                  placeholder="Your Email"
-                  value={contactForm.email}
-                  onChange={(e) => setContactForm({...contactForm, email: e.target.value})}
-                  required
-                />
+                {formErrors.subject && <span className="error-message">{formErrors.subject}</span>}
               </div>
-              <input
-                type="text"
-                placeholder="Subject"
-                value={contactForm.subject}
-                onChange={(e) => setContactForm({...contactForm, subject: e.target.value})}
-                required
-              />
-              <textarea
-                placeholder="Your Message"
-                value={contactForm.message}
-                onChange={(e) => setContactForm({...contactForm, message: e.target.value})}
-                required
-                rows={4}
-              />
-              <button type="submit">Send Message</button>
+              <div className="form-group">
+                <textarea
+                  placeholder="Your Message"
+                  value={contactForm.message}
+                  onChange={(e) => {
+                    setContactForm({...contactForm, message: e.target.value})
+                    setFormErrors({...formErrors, message: ''})
+                  }}
+                  className={formErrors.message ? 'error' : ''}
+                  rows={4}
+                />
+                {formErrors.message && <span className="error-message">{formErrors.message}</span>}
+              </div>
+              <button type="submit" disabled={contactStatus === 'Sending...'}>
+                {contactStatus === 'Sending...' ? 'Sending...' : 'Send Message'}
+              </button>
             </form>
           )}
           {contactStatus && (
@@ -118,19 +215,19 @@ export default function Footer() {
         {/* About Section */}
         <div className="about-section">
           <h3>About Fitness Freaks</h3>
-          <p>Your ultimate destination for fitness excellence. We're dedicated to helping you achieve your health and wellness goals through personalized training, expert guidance, and a supportive community.</p>
+          <p style={{fontSize:18 }}>Your ultimate destination for fitness excellence. We're dedicated to helping you achieve your health and wellness goals through personalized training, expert guidance, and a supportive community.</p>
           <div className="features">
             <div className="feature">
               <span className="feature-icon">💪</span>
-              <span>Personal Training</span>
+              <span style={{fontSize:18 }}>Personal Training</span>
             </div>
             <div className="feature">
               <span className="feature-icon">🥗</span>
-              <span>Nutrition Plans</span>
+              <span style={{fontSize:18 }}>Nutrition Plans</span>
             </div>
             <div className="feature">
               <span className="feature-icon">🏋️‍♂️</span>
-              <span>Workout Programs</span>
+              <span style={{fontSize:18 }}>Workout Programs</span>
             </div>
           </div>
         </div>
@@ -176,6 +273,7 @@ export default function Footer() {
           text-align: center;
           background: var(--snd-bg-color);
           border-top: 2px solid var(--main-color);
+          margin-top: auto;
         }
 
         .footer-content {
@@ -220,51 +318,138 @@ export default function Footer() {
         .contact-form {
           display: flex;
           flex-direction: column;
-          gap: 1rem;
-          margin-bottom: 1rem;
+          gap: 1.5rem;
+          margin-bottom: 1.5rem;
+          background: rgba(0, 0, 0, 0.2);
+          padding: 2rem;
+          border-radius: 12px;
+          border: 1px solid rgba(235, 235, 75, 0.2);
         }
 
         .form-row {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 1rem;
+          gap: 1.5rem;
+        }
+
+        .form-group {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
         }
 
         .contact-form input,
         .contact-form textarea {
-          padding: 1rem 1.2rem;
+          padding: 1.2rem 1.5rem;
           border: 2px solid rgba(235, 235, 75, 0.3);
-          border-radius: 8px;
-          background: rgba(255, 255, 255, 0.1);
-          color: var(--text-color);
-          font-size: 1rem;
+          border-radius: 10px;
+          background: rgba(255, 255, 255, 0.15);
+          color: #ffffff;
+          font-size: 1.1rem;
           transition: all 0.3s ease;
           backdrop-filter: blur(5px);
+          width: 100%;
         }
 
         .contact-form input::placeholder,
         .contact-form textarea::placeholder {
-          color: rgba(255, 255, 255, 0.6);
-          font-style: italic;
+          color: rgba(255, 255, 255, 0.7);
+          font-style: normal;
+          font-size: 1rem;
         }
 
         .contact-form input:focus,
         .contact-form textarea:focus {
           outline: none;
           border-color: var(--main-color);
-          background: rgba(255, 255, 255, 0.15);
+          background: rgba(255, 255, 255, 0.2);
           box-shadow: 0 0 20px rgba(235, 235, 75, 0.3);
           transform: translateY(-2px);
         }
 
         .contact-form textarea {
           resize: vertical;
-          min-height: 120px;
+          min-height: 150px;
           font-family: inherit;
           line-height: 1.6;
         }
 
-        .contact-form button,
+        .error-message {
+          color: #ff6b6b;
+          font-size: 0.9rem;
+          margin-top: 0.3rem;
+          font-weight: 500;
+          display: flex;
+          align-items: center;
+          gap: 0.3rem;
+        }
+
+        .error-message::before {
+          content: "⚠️";
+          font-size: 1rem;
+        }
+
+        .contact-form input.error,
+        .contact-form textarea.error {
+          border-color: #ff6b6b;
+          background: rgba(255, 107, 107, 0.1);
+        }
+
+        .contact-form button {
+          background: linear-gradient(135deg, var(--main-color) 0%, #dcdc3f 100%);
+          color: #000;
+          border: none;
+          padding: 1.2rem 2.5rem;
+          border-radius: 10px;
+          cursor: pointer;
+          font-weight: 700;
+          font-size: 1.2rem;
+          transition: all 0.3s ease;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          box-shadow: 0 4px 15px rgba(235, 235, 75, 0.3);
+          margin-top: 1rem;
+          width: 100%;
+        }
+
+        .contact-form button:hover {
+          background: linear-gradient(135deg, #dcdc3f 0%, var(--main-color) 100%);
+          transform: translateY(-3px);
+          box-shadow: 0 8px 25px rgba(235, 235, 75, 0.5);
+        }
+
+        .contact-form button:active {
+          transform: translateY(-1px);
+        }
+
+        .contact-form button:disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
+          transform: none;
+        }
+
+        .status-message {
+          padding: 1.2rem;
+          border-radius: 10px;
+          font-weight: 600;
+          font-size: 1.1rem;
+          text-align: center;
+          margin-top: 1.5rem;
+          border: 2px solid;
+        }
+
+        .status-message.success {
+          background: rgba(76, 175, 80, 0.15);
+          color: #4caf50;
+          border-color: #4caf50;
+        }
+
+        .status-message.error {
+          background: rgba(244, 67, 54, 0.15);
+          color: #f44336;
+          border-color: #f44336;
+        }
+
         .contact-toggle-btn {
           background: linear-gradient(135deg, var(--main-color) 0%, #dcdc3f 100%);
           color: #000;
@@ -278,40 +463,17 @@ export default function Footer() {
           text-transform: uppercase;
           letter-spacing: 1px;
           box-shadow: 0 4px 15px rgba(235, 235, 75, 0.3);
+          margin-bottom: 1.5rem;
         }
 
-        .contact-form button:hover,
         .contact-toggle-btn:hover {
           background: linear-gradient(135deg, #dcdc3f 0%, var(--main-color) 100%);
           transform: translateY(-3px);
           box-shadow: 0 8px 25px rgba(235, 235, 75, 0.5);
         }
 
-        .contact-form button:active,
         .contact-toggle-btn:active {
           transform: translateY(-1px);
-        }
-
-        .status-message {
-          padding: 1rem;
-          border-radius: 8px;
-          font-weight: 600;
-          font-size: 1rem;
-          text-align: center;
-          margin-top: 1rem;
-          border: 1px solid;
-        }
-
-        .status-message.success {
-          background: rgba(76, 175, 80, 0.2);
-          color: #4caf50;
-          border-color: #4caf50;
-        }
-
-        .status-message.error {
-          background: rgba(244, 67, 54, 0.2);
-          color: #f44336;
-          border-color: #f44336;
         }
 
         .features {
