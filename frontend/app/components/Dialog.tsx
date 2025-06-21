@@ -2,7 +2,7 @@ import React from 'react';
 
 interface DialogProps {
   isOpen: boolean;
-  message: string;
+  message: React.ReactNode;
   onClose: () => void;
   type?: 'success' | 'info' | 'welcome';
 }
@@ -138,53 +138,70 @@ export default function Dialog({ isOpen, message, onClose, type = 'info' }: Dial
           </p>
         </div>
 
-        <button
-          onClick={onClose}
-          style={{
-            padding: '12px 32px',
-            fontSize: '16px',
-            fontWeight: 600,
-            borderRadius: 8,
-            background: '#ebeb4b',
-            color: 'black',
-            border: 'none',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            position: 'relative',
-            zIndex: 1,
-            ':hover': {
-              transform: 'translateY(-2px)',
-              boxShadow: '0 4px 12px rgba(235, 235, 75, 0.3)'
-            }
-          }}
-        >
-          OK
-        </button>
+       <button
+         onClick={onClose}
+         className="dialog-button"
+         style={{
+           padding: '12px 32px',
+           fontSize: '16px',
+           fontWeight: 600,
+           borderRadius: 8,
+           background: '#ebeb4b',
+           color: 'black',
+           border: 'none',
+           cursor: 'pointer',
+           transition: 'all 0.2s ease',
+           position: 'relative',
+           zIndex: 1
+         }}
+       >
+         OK
+       </button>
+
 
         <style jsx>{`
           @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
           }
+
           @keyframes slideUp {
             from { transform: translateY(20px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
           }
+
           @keyframes scaleIn {
             from { transform: scale(0.8); opacity: 0; }
             to { transform: scale(1); opacity: 1; }
           }
+
           @keyframes bounceIn {
             0% { transform: scale(0.3); opacity: 0; }
             50% { transform: scale(1.1); }
             70% { transform: scale(0.9); }
             100% { transform: scale(1); opacity: 1; }
           }
-          button:hover {
+
+          .dialog-button {
+            padding: 12px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            background: #ebeb4b;
+            color: black;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            z-index: 1;
+          }
+
+          .dialog-button:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(235, 235, 75, 0.3);
           }
         `}</style>
+
       </div>
     </div>
   );

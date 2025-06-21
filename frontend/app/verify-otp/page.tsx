@@ -22,14 +22,14 @@ export default function VerifyOtp() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("http://localhost:8080/api/users/verify-otp", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, otp }),
       });
       const data = await res.json();
       if (res.ok && data.message?.toLowerCase().includes("verified")) {
-        const userRes = await fetch("http://localhost:8080/api/users/details", {
+        const userRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/details`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ username }),
@@ -62,7 +62,7 @@ export default function VerifyOtp() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("http://localhost:8080/api/users/resend-otp", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/resend-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username }),

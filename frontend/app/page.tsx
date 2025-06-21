@@ -100,9 +100,9 @@ export default function Home() {
             thrive!!!
           </p>
 
-          <a href="#" className="btn">
+          <Link href="/book-free-class" className="btn">
             Book A Free Class
-          </a>
+          </Link>
         </div>
       </section>
        <section className="diet-plan" id="diet">

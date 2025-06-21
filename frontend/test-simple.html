@@ -12,12 +12,13 @@
     <div id="result"></div>
 
     <script>
+        const API_BASE = window.API_BASE || 'http://localhost:8080';
         async function testReviews() {
             const resultDiv = document.getElementById('result');
             resultDiv.innerHTML = 'Testing reviews...';
             
             try {
-                const response = await fetch('http://localhost:8080/api/reviews');
+                const response = await fetch(`${API_BASE}/api/reviews`);
                 const data = await response.json();
                 resultDiv.innerHTML = `<h3>Reviews Test Result:</h3><pre>${JSON.stringify(data, null, 2)}</pre>`;
             } catch (error) {
@@ -30,7 +31,7 @@
             resultDiv.innerHTML = 'Testing login...';
             
             try {
-                const response = await fetch('http://localhost:8080/api/users/login', {
+                const response = await fetch(`${API_BASE}/api/users/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

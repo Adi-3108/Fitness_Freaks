@@ -5,7 +5,7 @@ import { Elements } from "@stripe/react-stripe-js";
 import CheckoutForm from "../../components/CheckoutForm";
 import { useEffect, useState } from "react";
 
-const stripePromise = loadStripe("pk_test_51RYuGAE8tL7ABuo5NdreB1GMZ72xEbPSRJ1J6krpzeT2Tvcss9f4rxR5FJQXxGWXtAdQcMvikEDacvAQTVVkih3G00ASsdJJMY"); // your public key
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 export default function PaymentPage() {
     const [clientSecret, setClientSecret] = useState("");
@@ -22,7 +22,7 @@ export default function PaymentPage() {
             return;
         }
 
-        fetch("http://localhost:8080/api/payment/create-payment-intent", {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payment/create-payment-intent`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ amount: parseInt(amount), email: email }),

@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-export default function PaymentSuccess() {
+function PaymentSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
@@ -29,7 +29,7 @@ export default function PaymentSuccess() {
 
         if (equipmentCart && equipmentUserEmail && equipmentUserId) {
           const cartItems = JSON.parse(equipmentCart);
-          const res = await fetch("http://localhost:8080/api/payment/confirm-equipment-order", {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payment/confirm-equipment-order`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -57,7 +57,7 @@ export default function PaymentSuccess() {
           const registrationData = localStorage.getItem("registrationData");
           if (registrationData) {
             const userData = JSON.parse(registrationData);
-            const res = await fetch("http://localhost:8080/api/payment/confirm-and-register", {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payment/confirm-and-register`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -157,5 +157,13 @@ export default function PaymentSuccess() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function PaymentSuccess() {
+  return (
+    <Suspense>
+      <PaymentSuccessContent />
+    </Suspense>
   );
 } 

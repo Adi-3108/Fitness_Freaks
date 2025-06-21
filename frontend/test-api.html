@@ -12,12 +12,13 @@
     <div id="result"></div>
 
     <script>
+        const API_BASE = window.API_BASE || 'http://localhost:8080';
         async function testLogin() {
             const resultDiv = document.getElementById('result');
             resultDiv.innerHTML = 'Testing login...';
             
             try {
-                const response = await fetch('http://localhost:8080/api/users/login', {
+                const response = await fetch(`${API_BASE}/api/users/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -40,7 +41,7 @@
             resultDiv.innerHTML = 'Testing registration...';
             
             try {
-                const response = await fetch('http://localhost:8080/api/users/register', {
+                const response = await fetch(`${API_BASE}/api/users/register`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

@@ -1,3 +1,4 @@
+"use client"
 import { useEffect, useState } from "react";
 import Image from "next/image";
 
@@ -5,7 +6,7 @@ const ReviewSection = () => {
   const [reviews, setReviews] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:8080/api/reviews")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reviews`)
       .then((res) => res.json())
       .then((data) => setReviews(data))
       .catch((err) => console.error("Failed to fetch reviews:", err));

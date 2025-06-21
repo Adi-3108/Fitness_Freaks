@@ -21,7 +21,7 @@ import java.time.DayOfWeek;
 
 @RestController
 @RequestMapping("/api/workout-plans")
-@CrossOrigin(origins = "http://localhost:3000")
+
 public class WorkoutPlanController {
     private static final Logger logger = LoggerFactory.getLogger(WorkoutPlanController.class);
 
@@ -37,8 +37,7 @@ public class WorkoutPlanController {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Value("${spring.mail.username}")
-    private String defaultEmail;
+  
 
     @GetMapping
     public List<WorkoutPlan> getAllWorkoutPlans() {
@@ -50,11 +49,16 @@ public class WorkoutPlanController {
         logger.info("Received send-workout-plan request: {}", payload);
         
         String category = (String) payload.get("category");
+        String userEmail = (String) payload.get("email");
         List<String> exercises = (List<String>) payload.get("exercises");
 
         if (category == null) {
             logger.warn("Invalid input: category missing");
             return ResponseEntity.badRequest().body(Map.of("message", "Category is required."));
+        }
+        if (userEmail == null || userEmail.isEmpty()) {
+            logger.warn("Invalid input: user email missing");
+            return ResponseEntity.badRequest().body(Map.of("message", "User email is required."));
         }
 
         try {
@@ -67,17 +71,17 @@ public class WorkoutPlanController {
                 return ResponseEntity.badRequest().body(Map.of("message", "No workout plan available for this category today."));
             }
 
-            // Send email with today's workout to the configured email address
-            emailService.sendWorkoutPlanEmail(defaultEmail, "User", category, dailyExercises);
+            // Send email with today's workout to the user's email address
+            emailService.sendWorkoutPlanEmail(userEmail, "User", category, dailyExercises);
             
-            logger.info("Workout plan sent successfully to: {}", defaultEmail);
+            logger.info("Workout plan sent successfully to: {}", userEmail);
             return ResponseEntity.ok(Map.of(
                 "message", "Workout plan sent successfully.",
                 "day", today.toString(),
                 "exercises", dailyExercises.toString()
             ));
         } catch (Exception e) {
-            logger.error("Failed to send workout plan to {}: {}", defaultEmail, e.getMessage());
+            logger.error("Failed to send workout plan to {}: {}", userEmail, e.getMessage());
             return ResponseEntity.badRequest().body(Map.of("message", "Failed to send workout plan: " + e.getMessage()));
         }
     }

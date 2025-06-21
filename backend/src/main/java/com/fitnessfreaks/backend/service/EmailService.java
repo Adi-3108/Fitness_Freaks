@@ -1,6 +1,7 @@
 package com.fitnessfreaks.backend.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -15,6 +16,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class EmailService {
+
+    @Value("${frontend.url}")
+    private String frontendUrl;
+
     @Autowired
     private JavaMailSender mailSender;
     
@@ -188,7 +193,8 @@ public class EmailService {
                 .append("<li class='workout-item'>Take adequate rest between sets</li>")
                 .append("</ul>")
                 .append("<p>Stay fit and fabulous!</p>")
-                .append("<a href='http://localhost:3000' class='visit-btn'>Visit Fitness Freaks</a>")
+              .append("<a href='").append(frontendUrl).append("' class='visit-btn'>Visit Fitness Freaks</a>")
+
                 .append("</div>")
                 .append("<div class='footer'>Fitness Freaks Team | Your Partner in Fitness Journey</div>")
                 .append("</div></body></html>");

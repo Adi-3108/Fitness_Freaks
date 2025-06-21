@@ -128,7 +128,7 @@ export default function BuyEquipmentPage() {
     try {
       const user = JSON.parse(localStorage.getItem("user") || "{}");
       const response = await fetch(
-        `http://localhost:8080/api/orders/user/${user.id}`
+        `${process.env.NEXT_PUBLIC_API_URL}/api/orders/user/${user.id}`
       );
       if (!response.ok) throw new Error("Failed to fetch orders");
 

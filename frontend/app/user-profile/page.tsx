@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
-import Dialog from "../../app/components/Dialog"
+import Dialog from "../components/Dialog"
 import ReactCrop, { Crop } from 'react-image-crop'
 import 'react-image-crop/dist/ReactCrop.css'
 
@@ -43,6 +43,7 @@ export default function UserProfile() {
   const [showDialog, setShowDialog] = useState(false);
   const [dialogMessage, setDialogMessage] = useState("");
   const [dialogType, setDialogType] = useState<'success' | 'info'>('info');
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
   const workoutOptions = [
     "Deadlift",
@@ -79,7 +80,7 @@ export default function UserProfile() {
 
   useEffect(() => {
     if (user?.id) {
-      fetch(`http://localhost:8080/api/schedule/user/${user.id}`)
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/schedule/user/${user.id}`)
         .then(res => res.json())
         .then(setSchedules);
     }
@@ -206,7 +207,7 @@ useEffect(() => {
       scheduledAt,
       user: { id: user.id }
     };
-    const res = await fetch("http://localhost:8080/api/schedule", {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/schedule`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formattedSchedule)
@@ -231,7 +232,7 @@ useEffect(() => {
   };
 
   const handleDeleteSchedule = async (id: number) => {
-    await fetch(`http://localhost:8080/api/schedule/${id}`, { method: "DELETE" });
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/schedule/${id}`, { method: "DELETE" });
     setSchedules(schedules.filter(s => s.id !== id));
   };
 
@@ -313,6 +314,69 @@ useEffect(() => {
         onClose={() => setShowDialog(false)}
         type={dialogType}
       />
+      {showLogoutDialog && (
+        <div style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          background: "rgba(0,0,0,0.3)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 2000
+        }}>
+          <div style={{
+            background: "#fff",
+            borderRadius: 16,
+            padding: 32,
+            minWidth: 320,
+            maxWidth: "90%",
+            textAlign: "center",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.2)"
+          }}>
+            <h3 style={{ color: "#232526", marginBottom: 16 }}>Are you sure you want to logout?</h3>
+            <div style={{ display: "flex", justifyContent: "center", gap: "1rem", flexWrap: "wrap" }}>
+              <button
+                onClick={() => {
+                  localStorage.removeItem("user");
+                  localStorage.removeItem("username");
+                  setShowLogoutDialog(false);
+                  router.push("/");
+                }}
+                style={{
+                  padding: "10px 24px",
+                  fontSize: 16,
+                  borderRadius: 8,
+                  background: "#e74c3c",
+                  color: "#fff",
+                  border: "none",
+                  cursor: "pointer",
+                  minWidth: 120
+                }}
+              >
+                Yes, Logout
+              </button>
+              <button
+                onClick={() => setShowLogoutDialog(false)}
+                style={{
+                  padding: "10px 24px",
+                  fontSize: 16,
+                  borderRadius: 8,
+                  background: "#232526",
+                  color: "#fff",
+                  border: "none",
+                  cursor: "pointer",
+                  minWidth: 120
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div style={{ minHeight: "100vh", background: "#000", fontFamily: "inherit" }}>
         <header style={{ display: "flex", alignItems: "center", padding: "24px 48px", background: "#000", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
           <Link href="/" className="logo" style={{ fontSize: 36, fontWeight: 700, color: "#fff", textDecoration: "none", marginRight: 32, letterSpacing: 1, transition: 'color 0.2s, transform 0.2s' }}>
@@ -324,13 +388,7 @@ useEffect(() => {
             <Link href="/#plans" style={{ marginRight: 32, color: "#ebeb4b", textDecoration: "none", fontWeight: 500, fontSize: 20, transition: 'color 0.2s, text-decoration 0.2s, transform 0.2s' }} className="nav-hover">Plans</Link>
           </nav>
           <button
-            onClick={() => {
-              if (confirm("Are you sure you want to log out?")) {
-                localStorage.removeItem("user")
-                localStorage.removeItem("username")
-                router.push("/")
-              }
-            }}
+            onClick={() => setShowLogoutDialog(true)}
             style={{
               background: "#e74c3c",
               color: "#fff",
@@ -845,7 +903,7 @@ useEffect(() => {
                     if (!confirmDelete) { setCancelError("You must agree to the terms."); return; }
                     setSendingCode(true);
                     // Send code to email
-                    const res = await fetch("http://localhost:8080/api/users/send-cancel-code", {
+                    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/send-cancel-code`, {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({ email: user.email })
@@ -886,7 +944,7 @@ useEffect(() => {
                     if (enteredCode !== cancelCode) { setCancelError("Invalid code."); return; }
                     setVerifying(true);
                     // Call backend to delete user
-                    const res = await fetch("http://localhost:8080/api/users/cancel-subscription", {
+                    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/cancel-subscription`, {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({ email: user.email })

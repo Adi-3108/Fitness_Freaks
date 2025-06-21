@@ -30,7 +30,7 @@ export default function Login() {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://localhost:8080/api/users/login", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -49,7 +49,7 @@ export default function Login() {
         // After OTP verification, user info will be saved in localStorage
       } else if (response.ok && data.message && data.message.toLowerCase().includes("verified")) {
         // If login directly verifies (for future), fetch user details
-        const userRes = await fetch(`http://localhost:8080/api/users/details`, {
+        const userRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/details`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ username: formData.username }),

@@ -44,7 +44,7 @@ export default function ReviewSection() {
   // Fetch all backend reviews on mount and after every submission
   const fetchAllBackendReviews = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/reviews");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reviews`);
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data)) {
@@ -101,7 +101,7 @@ export default function ReviewSection() {
   const handleSubmitReview = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch("http://localhost:8080/api/reviews", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reviews`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

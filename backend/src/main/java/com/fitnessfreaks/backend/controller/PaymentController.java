@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/payment")
-@CrossOrigin(origins = "http://localhost:3000")
+
 public class PaymentController {
 
     private final PaymentService paymentService;
@@ -51,8 +51,7 @@ public class PaymentController {
     @PostMapping("/webhook")
     public ResponseEntity<String> handleWebhook(@RequestBody String payload, @RequestHeader("Stripe-Signature") String sigHeader) {
         try {
-            // Handle Stripe webhook events here
-            // For now, we'll just return a success response
+           
             return ResponseEntity.ok("Webhook received");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Webhook Error: " + e.getMessage());

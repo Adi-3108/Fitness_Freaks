@@ -19,7 +19,7 @@ export default function Footer() {
 
   const trackFooterAction = async (action: string, target: string) => {
     try {
-      await fetch('http://localhost:8080/api/footer-analytics/track', {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/footer-analytics/track`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -96,7 +96,7 @@ export default function Footer() {
     setContactStatus('Sending...')
     
     try {
-      const response = await fetch('http://localhost:8080/api/contact/send', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/contact/send`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(contactForm)

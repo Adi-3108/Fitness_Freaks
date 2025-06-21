@@ -8,7 +8,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/schedule")
-@CrossOrigin(originPatterns = "http://localhost:[*]")
+
 public class ScheduleController {
     @Autowired
     private ScheduleService scheduleService;

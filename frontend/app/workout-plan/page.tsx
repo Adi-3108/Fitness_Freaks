@@ -107,17 +107,18 @@ const WorkoutPlan = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:8080/api/workout-plans/send', {
+      const emailData = {
+        category: selectedPlan,
+        email: email,
+        exercises: workoutPlans.find(plan => plan.name === selectedPlan)?.exercises.map(ex => 
+          `${ex.name}: ${ex.sets} sets x ${ex.reps || ex.duration}`
+        )
+      };
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/workout-plans/send`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          category: selectedPlan,
-          exercises: workoutPlans.find(plan => plan.name === selectedPlan)?.exercises.map(ex => 
-            `${ex.name}: ${ex.sets} sets x ${ex.reps || ex.duration}`
-          )
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(emailData)
       });
 
       const data = await response.json();

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import java.time.LocalDateTime;
 
 @Service
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3005"})
+
 public class PaymentService {
 
     private final PaymentRepository paymentRepository;

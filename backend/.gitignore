@@ -33,3 +33,13 @@ build/
 .vscode/
 
 
+.env
+
+.mvn
+
+
+Dockerfile
+
+
+
+

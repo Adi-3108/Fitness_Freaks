@@ -4,6 +4,7 @@ import com.fitnessfreaks.backend.entity.User;
 import com.fitnessfreaks.backend.service.UserService;
 import com.fitnessfreaks.backend.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.web.bind.annotation.*;
@@ -15,11 +16,15 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@CrossOrigin(originPatterns = "http://localhost:[*]")
+
 @RestController
 @RequestMapping("/api/users")
 public class AuthController {
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+     
+     @Value("${frontend.url}")
+    private String frontendUrl;
+
 
     @Autowired
     private UserService userService;
@@ -159,7 +164,9 @@ public class AuthController {
                 .append("<p class='total'>Total Calories: ").append(totalCalories).append(" kcal</p>")
                 .append("<p>Stay healthy!</p>")
                 .append("</div>")
-                .append("<div class='footer'>Fitness Freaks Team | <a href='http://localhost:3000' style='color: #ebeb4b;'>Visit Us</a></div>")
+               .append("<div class='footer'>Fitness Freaks Team | " +
+        "<a href='" + frontendUrl + "' style='color: #ebeb4b;'>Visit Us</a></div>")
+
                 .append("</div></body></html>");
 
         try {
@@ -192,7 +199,7 @@ public class AuthController {
         userService.saveUser(user);
 
         // Create reset link
-        String resetLink = "http://localhost:3000/reset-password?token=" + token;
+        String resetLink = frontendUrl + "/reset-password?token=" + token;
 
         // Send email with reset link
         try {

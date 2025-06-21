@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.List;
 import java.util.HashMap;
 
-@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api/footer-analytics")
 public class FooterAnalyticsController {
